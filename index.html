@@ -1,0 +1,1571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f172a" />
+  <title>Trailer Pass — Car Medic</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+          colors: {
+            brand: {
+              50:  '#eff6ff', 100: '#dbeafe', 500: '#3b82f6',
+              600: '#2563eb', 700: '#1d4ed8', 900: '#1e3a8a',
+            },
+          },
+          boxShadow: {
+            card:  '0 1px 2px rgba(15,23,42,.04), 0 4px 16px rgba(15,23,42,.06)',
+            float: '0 8px 32px rgba(15,23,42,.18)',
+          },
+          animation: {
+            'pulse-soft': 'pulse-soft 2s ease-in-out infinite',
+            'fade-in':    'fade-in .25s ease-out',
+            'slide-up':   'slide-up .3s ease-out',
+            'pop-in':     'pop-in .35s cubic-bezier(.16,1.36,.5,1)',
+          },
+          keyframes: {
+            'pulse-soft': { '0%,100%': { opacity: '1' }, '50%': { opacity: '.55' } },
+            'fade-in':    { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+            'slide-up':   { '0%': { opacity: '0', transform: 'translateY(16px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+            'pop-in':     { '0%': { opacity: '0', transform: 'scale(.85)' }, '100%': { opacity: '1', transform: 'scale(1)' } },
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    html, body { height: 100%; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background:
+        radial-gradient(1200px 600px at 50% -200px, #dbeafe 0%, transparent 60%),
+        #f1f5f9;
+      -webkit-font-smoothing: antialiased;
+    }
+    .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 1rem); }
+    .safe-top    { padding-top:    max(env(safe-area-inset-top), 0px); }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .map-bg {
+      background-color: #e2e8f0;
+      background-image:
+        radial-gradient(#cbd5e1 1px, transparent 1px),
+        linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+      background-size: 16px 16px, 100% 100%;
+    }
+    .photo-empty {
+      background: repeating-linear-gradient(45deg, #f1f5f9 0 8px, #e2e8f0 8px 16px);
+    }
+    .hidden-native {
+      position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none;
+    }
+    /* Plate input — monospace + tracking for plate look */
+    .plate-input {
+      font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body class="text-slate-900">
+
+  <!-- ============================================================= -->
+  <!-- PHONE CONTAINER                                               -->
+  <!-- ============================================================= -->
+  <div class="mx-auto min-h-screen max-w-md bg-white shadow-card flex flex-col relative overflow-hidden">
+
+    <!-- HEADER -->
+    <header class="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-200 safe-top">
+      <div class="px-5 py-3 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <img src="images/logo.png" alt="Car Medic"
+               class="w-10 h-10 object-contain shrink-0"
+               onerror="this.outerHTML='<div class=&quot;w-9 h-9 rounded-xl bg-gradient-to-br from-brand-600 to-brand-900 grid place-items-center text-white shadow-card shrink-0&quot;><i data-lucide=&quot;truck&quot; class=&quot;w-5 h-5&quot;></i></div>'; if(window.lucide) lucide.createIcons();" />
+          <div class="min-w-0">
+            <div id="brandLabel" class="text-[11px] font-medium text-slate-500 leading-none uppercase tracking-wider">Trailer Pass</div>
+            <div id="passId" class="text-sm font-semibold text-slate-900 leading-tight truncate">TR-2026-005678</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <div id="langToggle" class="flex items-center bg-slate-100 rounded-full p-0.5 text-[11px] font-bold">
+            <button onclick="setLang('en')" data-lang="en" class="lang-btn px-2.5 py-1 rounded-full transition">EN</button>
+            <button onclick="setLang('ms')" data-lang="ms" class="lang-btn px-2.5 py-1 rounded-full transition">MS</button>
+          </div>
+          <div id="statusBadge"></div>
+        </div>
+      </div>
+
+      <div class="px-5 pb-3">
+        <div id="stepStrip" class="flex items-center gap-1"></div>
+      </div>
+    </header>
+
+    <!-- VIEW -->
+    <main id="view" class="flex-1 overflow-y-auto"></main>
+
+    <!-- ACTION BAR -->
+    <footer id="actionBar" class="sticky bottom-0 z-30 bg-white/95 backdrop-blur-md border-t border-slate-200 safe-bottom"></footer>
+
+    <!-- ============================================================= -->
+    <!-- PRESENT PASS TO STORE PARTNER                                -->
+    <!-- ============================================================= -->
+    <div id="presentOverlay" class="hidden fixed inset-0 z-50 bg-gradient-to-br from-brand-700 via-brand-600 to-brand-900 text-white animate-fade-in flex flex-col safe-top safe-bottom">
+      <div class="p-5 flex items-center justify-between">
+        <div class="flex items-center gap-2 text-sm font-medium opacity-90">
+          <i data-lucide="shield-check" class="w-5 h-5"></i>
+          <span data-i18n="present.title"></span>
+        </div>
+        <button onclick="hidePresent()" class="w-10 h-10 rounded-full bg-white/15 hover:bg-white/25 grid place-items-center transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="flex-1 flex flex-col px-6 pb-6 overflow-y-auto">
+        <div class="my-6 flex items-center gap-3">
+          <img src="images/logo.png" alt="Car Medic"
+               class="w-12 h-12 object-contain shrink-0"
+               onerror="this.outerHTML='<div class=&quot;w-12 h-12 rounded-2xl bg-white/15 grid place-items-center&quot;><i data-lucide=&quot;truck&quot; class=&quot;w-6 h-6&quot;></i></div>'; if(window.lucide) lucide.createIcons();" />
+          <div>
+            <div class="text-xs uppercase tracking-widest opacity-70">Car Medic</div>
+            <div class="font-bold text-lg leading-tight" data-i18n="present.service"></div>
+          </div>
+        </div>
+
+        <div class="rounded-3xl bg-white/10 backdrop-blur p-5 border border-white/15">
+          <div class="text-xs uppercase tracking-widest opacity-70 mb-1" data-i18n="present.run"></div>
+          <div class="text-2xl font-bold mb-4" id="presentRunCount"></div>
+          <div class="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <div class="opacity-70 text-xs uppercase tracking-wider" data-i18n="present.trailer_plate"></div>
+              <div class="font-semibold text-base">WGK 9921</div>
+            </div>
+            <div>
+              <div class="opacity-70 text-xs uppercase tracking-wider" data-i18n="present.pass_id"></div>
+              <div class="font-semibold text-base">TR-2026-005678</div>
+            </div>
+            <div>
+              <div class="opacity-70 text-xs uppercase tracking-wider" data-i18n="present.capacity"></div>
+              <div class="font-semibold text-base">8 <span data-i18n="present.vehicles"></span></div>
+            </div>
+            <div>
+              <div class="opacity-70 text-xs uppercase tracking-wider" data-i18n="present.issued"></div>
+              <div class="font-semibold text-base">06 May, 09:30</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-5 rounded-3xl bg-white text-slate-900 p-5 shadow-float">
+          <div class="text-xs uppercase tracking-widest text-slate-500 mb-2" data-i18n="present.driver"></div>
+          <div class="flex items-center gap-3">
+            <div class="w-14 h-14 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 grid place-items-center text-white font-bold text-lg">RZ</div>
+            <div class="flex-1">
+              <div class="font-semibold text-base leading-tight">Rizal Zainuddin</div>
+              <div class="text-xs text-slate-500"><span data-i18n="present.trailer"></span> • WGK 9921</div>
+            </div>
+            <div class="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold flex items-center gap-1">
+              <i data-lucide="badge-check" class="w-3.5 h-3.5"></i>
+              <span data-i18n="present.verified"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-auto pt-6">
+          <div class="flex items-center justify-center gap-2 text-xs opacity-80 text-center">
+            <i data-lucide="lock" class="w-3.5 h-3.5"></i>
+            <span data-i18n="present.verify_msg"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================= -->
+    <!-- LOAD VEHICLE MODAL                                           -->
+    <!-- ============================================================= -->
+    <div id="loadModal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-end sm:items-center justify-center animate-fade-in">
+      <div class="w-full max-w-md max-h-[92vh] bg-white rounded-t-3xl sm:rounded-3xl flex flex-col animate-slide-up">
+
+        <div class="p-6 pb-3 border-b border-slate-100">
+          <div class="flex items-center justify-between mb-1">
+            <h3 class="text-lg font-bold" data-i18n="load.title"></h3>
+            <button onclick="closeLoadModal()" class="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 grid place-items-center">
+              <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+          </div>
+          <p class="text-sm text-slate-600" data-i18n="load.subtitle"></p>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-6 space-y-5">
+          <!-- Plate input -->
+          <div>
+            <label class="text-xs uppercase tracking-wider text-slate-500 font-semibold" data-i18n="load.plate_label"></label>
+            <input id="loadPlateInput" type="text"
+                   class="plate-input mt-2 w-full h-16 rounded-2xl border-2 border-slate-200 bg-slate-50 text-center text-2xl font-bold focus:border-brand-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-100 transition"
+                   placeholder="WXY 1234" maxlength="10" autocomplete="off"
+                   oninput="onPlateInput()" />
+            <div id="loadPlateHint" class="mt-2 text-xs text-slate-500 flex items-center gap-1.5">
+              <i data-lucide="info" class="w-3.5 h-3.5"></i>
+              <span data-i18n="load.help"></span>
+            </div>
+          </div>
+
+          <!-- Photos -->
+          <div>
+            <label class="text-xs uppercase tracking-wider text-slate-500 font-semibold" data-i18n="load.photos_label"></label>
+            <div class="grid grid-cols-2 gap-2 mt-2">
+              <button onclick="openLoadPhoto('vehicle')" id="loadPhotoVehicle"></button>
+              <button onclick="openLoadPhoto('plate')"   id="loadPhotoPlate"></button>
+            </div>
+          </div>
+
+          <!-- Status banner (success / mismatch / duplicate) -->
+          <div id="loadStatusBanner"></div>
+        </div>
+
+        <div class="p-6 pt-3 border-t border-slate-100">
+          <button onclick="submitLoad()" id="loadSubmitBtn" disabled
+                  class="w-full h-14 rounded-2xl bg-slate-200 text-slate-400 cursor-not-allowed font-semibold text-base flex items-center justify-center gap-2 transition">
+            <i data-lucide="check" class="w-5 h-5"></i>
+            <span data-i18n="load.submit"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================= -->
+    <!-- SUCCESS TOAST                                                -->
+    <!-- ============================================================= -->
+    <div id="successToast" class="hidden fixed inset-0 z-[60] bg-emerald-600/95 grid place-items-center animate-fade-in">
+      <div class="text-white text-center px-8 animate-pop-in">
+        <div class="w-24 h-24 rounded-full bg-white/20 grid place-items-center mx-auto mb-4">
+          <div class="w-16 h-16 rounded-full bg-white grid place-items-center">
+            <i data-lucide="check" class="w-10 h-10 text-emerald-600"></i>
+          </div>
+        </div>
+        <h3 class="text-2xl font-extrabold mb-1" data-i18n="success.title"></h3>
+        <p class="text-emerald-50 text-sm" id="successBody"></p>
+      </div>
+    </div>
+
+    <!-- ============================================================= -->
+    <!-- PHOTO MODAL                                                  -->
+    <!-- ============================================================= -->
+    <div id="photoModal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-end sm:items-center justify-center animate-fade-in">
+      <div class="w-full max-w-md bg-white rounded-t-3xl sm:rounded-3xl p-6 animate-slide-up">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-bold"><span data-i18n="photo_modal.title"></span> — <span id="photoModalAngle"></span></h3>
+          <button onclick="closePhotoModal()" class="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 grid place-items-center">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+        <div class="aspect-[4/3] rounded-2xl bg-slate-900 grid place-items-center text-slate-400 mb-4 relative overflow-hidden">
+          <i data-lucide="camera" class="w-12 h-12"></i>
+          <div class="absolute inset-4 border-2 border-dashed border-white/30 rounded-xl"></div>
+          <div class="absolute bottom-3 left-3 right-3 text-center text-xs text-white/70" data-i18n="photo_modal.frame"></div>
+        </div>
+        <p class="text-sm text-slate-600 mb-4" data-i18n="photo_modal.subtitle"></p>
+        <button onclick="confirmPhoto()" class="w-full h-14 rounded-2xl bg-brand-600 hover:bg-brand-700 text-white font-semibold flex items-center justify-center gap-2 transition">
+          <i data-lucide="camera" class="w-5 h-5"></i>
+          <span data-i18n="photo_modal.btn"></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ============================================================= -->
+    <!-- ISSUE MODAL                                                  -->
+    <!-- ============================================================= -->
+    <div id="issueModal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-end sm:items-center justify-center animate-fade-in">
+      <div class="w-full max-w-md bg-white rounded-t-3xl sm:rounded-3xl p-6 animate-slide-up">
+        <div class="flex items-center justify-between mb-1">
+          <h3 class="text-lg font-bold" data-i18n="issue.title"></h3>
+          <button onclick="closeIssueModal()" class="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 grid place-items-center">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+        <p class="text-sm text-slate-600 mb-4" data-i18n="issue.subtitle"></p>
+        <div class="space-y-2">
+          <button class="w-full text-left px-4 py-3 rounded-2xl border border-slate-200 hover:border-brand-500 hover:bg-brand-50 transition flex items-center gap-3">
+            <i data-lucide="store" class="w-5 h-5 text-amber-600"></i>
+            <div>
+              <div class="font-semibold text-sm" data-i18n="issue.opt1.title"></div>
+              <div class="text-xs text-slate-500" data-i18n="issue.opt1.body"></div>
+            </div>
+          </button>
+          <button class="w-full text-left px-4 py-3 rounded-2xl border border-slate-200 hover:border-brand-500 hover:bg-brand-50 transition flex items-center gap-3">
+            <i data-lucide="map-pin-off" class="w-5 h-5 text-amber-600"></i>
+            <div>
+              <div class="font-semibold text-sm" data-i18n="issue.opt2.title"></div>
+              <div class="text-xs text-slate-500" data-i18n="issue.opt2.body"></div>
+            </div>
+          </button>
+          <button class="w-full text-left px-4 py-3 rounded-2xl border border-slate-200 hover:border-brand-500 hover:bg-brand-50 transition flex items-center gap-3">
+            <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-600"></i>
+            <div>
+              <div class="font-semibold text-sm" data-i18n="issue.opt3.title"></div>
+              <div class="text-xs text-slate-500" data-i18n="issue.opt3.body"></div>
+            </div>
+          </button>
+          <button class="w-full text-left px-4 py-3 rounded-2xl border border-rose-200 hover:border-rose-500 hover:bg-rose-50 transition flex items-center gap-3 mt-2">
+            <i data-lucide="x-octagon" class="w-5 h-5 text-rose-600"></i>
+            <div>
+              <div class="font-semibold text-sm text-rose-700" data-i18n="issue.cancel.title"></div>
+              <div class="text-xs text-rose-600/80" data-i18n="issue.cancel.body"></div>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================= -->
+    <!-- ETA TIME PICKER MODAL                                        -->
+    <!-- ============================================================= -->
+    <div id="etaTimeModal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-end sm:items-center justify-center animate-fade-in">
+      <div class="w-full max-w-md bg-white rounded-t-3xl sm:rounded-3xl p-6 animate-slide-up">
+        <div class="flex items-center justify-between mb-1">
+          <h3 class="text-lg font-bold" data-i18n="eta.set_time_title"></h3>
+          <button onclick="closeEtaTimeModal()" class="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 grid place-items-center">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+        <p class="text-sm text-slate-600 mb-4" data-i18n="eta.set_time_body"></p>
+        <input id="etaTimeInput" type="time"
+               class="w-full h-16 rounded-2xl border border-slate-200 bg-slate-50 text-center text-3xl font-bold tracking-tight focus:border-brand-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-100 transition" />
+        <button onclick="applyEtaTime()" class="mt-4 w-full h-14 rounded-2xl bg-brand-600 hover:bg-brand-700 text-white font-semibold flex items-center justify-center gap-2 transition">
+          <i data-lucide="check" class="w-5 h-5"></i>
+          <span data-i18n="eta.apply"></span>
+        </button>
+      </div>
+    </div>
+
+    <input id="wazeFileInput" type="file" accept="image/*" class="hidden-native" onchange="handleWazeFile(event)" />
+
+  </div>
+
+  <!-- ============================================================= -->
+  <!-- DEMO PANEL                                                    -->
+  <!-- ============================================================= -->
+  <div id="demoControls" class="fixed bottom-4 right-4 z-40">
+    <button onclick="toggleDemoPanel()" class="w-12 h-12 rounded-full bg-slate-900 text-white shadow-float grid place-items-center hover:bg-slate-800 transition">
+      <i data-lucide="settings-2" class="w-5 h-5"></i>
+    </button>
+    <div id="demoPanel" class="hidden absolute bottom-14 right-0 w-72 bg-white rounded-2xl shadow-float border border-slate-200 p-3 animate-slide-up">
+      <div id="demoTitle" class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-2 pb-2"></div>
+      <div id="demoButtons" class="space-y-1"></div>
+      <button onclick="loadAllDemo()" class="mt-2 w-full text-xs font-medium text-brand-700 hover:bg-brand-50 rounded-lg px-3 py-2 flex items-center gap-2">
+        <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+        <span data-i18n="demo.load_all"></span>
+      </button>
+      <button onclick="resetDemo()" class="mt-1 w-full text-xs font-medium text-rose-600 hover:bg-rose-50 rounded-lg px-3 py-2 flex items-center gap-2">
+        <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+        <span data-i18n="demo.reset"></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ============================================================= -->
+  <!-- APP LOGIC                                                    -->
+  <!-- ============================================================= -->
+  <script>
+    // ===============================================================
+    // i18n
+    // ===============================================================
+    const i18n = {
+      en: {
+        'brand.label': 'Trailer Pass',
+
+        'status.new':         'New Pass',
+        'status.loading':     'Loading',
+        'status.in_transit':  'In Transit',
+        'status.at_dropoff':  'At Drop-off',
+        'status.completed':   'Completed',
+
+        'step.issued':       'Issued',
+        'step.loading':      'Loading',
+        'step.in_transit':   'Transit',
+        'step.at_dropoff':   'Drop-off',
+        'step.completed':    'Done',
+
+        'common.trailer':       'Trailer',
+        'common.driver':        'Driver',
+        'common.dropoff':       'Drop-off',
+        'common.store_partner': 'Store Partner',
+        'common.open_maps':     'Open in Maps',
+        'common.min':           'min',
+        'common.km':            'km',
+        'common.vehicles':      'vehicles',
+        'common.vehicle':       'vehicle',
+
+        'issued.tag':            'New pickup run',
+        'issued.title':          'You\'ve been assigned a pickup run',
+        'issued.subtitle':       'Collect the vehicles below from the store partner.',
+        'issued.summary_title':  'Pickup Summary',
+        'issued.stat_vehicles':  'Vehicles',
+        'issued.stat_capacity':  'Capacity',
+        'issued.stat_distance':  'Distance',
+        'issued.reminder_title': 'Reminder',
+        'issued.reminder_body':  'Vehicles can be picked up in any order at the store partner.',
+        'issued.pickup_title':   'Pickup Location',
+
+        'expected.title':         'Vehicles to Pick Up',
+        'expected.subtitle':      'Assigned to this trailer.',
+
+        'loaded.title':           'Loaded Vehicles',
+        'loaded.subtitle':        'Vehicles you have loaded onto the trailer.',
+        'loaded.empty':           'No vehicles loaded yet.',
+        'loaded.empty_hint':      'Tap the button above to start loading.',
+        'loaded.remove':          'Remove',
+        'loaded.remove_confirm':  'Remove this vehicle from the trailer?',
+        'loaded.at':              'at',
+        'loaded.photos_count':    '{n} photos',
+        'loaded.add_vehicle':     '+ Load Vehicle',
+
+        'load.title':         'Load Vehicle to Trailer',
+        'load.subtitle':      'Enter the plate number and capture the photos.',
+        'load.plate_label':   'Plate Number',
+        'load.photos_label':  'Photos',
+        'load.photo_vehicle': 'Vehicle',
+        'load.photo_plate':   'Plate Close-up',
+        'load.submit':        'Load Vehicle',
+        'load.help':          'Make sure the plate is clearly visible in the photo.',
+        'load.duplicate_title':'Already loaded',
+        'load.duplicate_body': 'This plate has already been added to the trailer.',
+
+        'success.title':      'Vehicle Loaded',
+        'success.body':       'Vehicle has been added to the trailer.',
+
+        'transit.title':         'En Route to Drop-off',
+        'transit.summary':       'Trailer Summary',
+        'transit.loaded_label':  'Loaded',
+        'transit.skipped_label': 'Skipped',
+
+        'dropoff.tag':           'Arrived at drop-off',
+        'dropoff.body':          'Take overview photos of the trailer to confirm arrival.',
+        'dropoff.photos_title':  'Trailer Arrival Photos',
+        'dropoff.photos_subtitle': 'Capture front and rear of the trailer.',
+        'dropoff.note':          'Capture both photos to continue.',
+        'photos.angle.front':    'Trailer Front',
+        'photos.angle.rear':     'Trailer Rear',
+
+        'eta.title':         'Estimated arrival',
+        'eta.in':            'in',
+        'eta.tap_to_edit':   'Tap to edit arrival time',
+        'eta.upload_waze':   'Upload Waze Screenshot',
+        'eta.set_time_title':'Set arrival time',
+        'eta.set_time_body': 'Enter the time you expect to arrive.',
+        'eta.apply':         'Apply',
+        'eta.waze_uploaded': 'Waze screenshot attached',
+        'eta.target':        'at',
+
+        'action.start_run':         'Start Pickup Run',
+        'action.depart_dropoff':    'Depart for Drop-off',
+        'action.arrived_dropoff':   "I've Arrived at Drop-off",
+        'action.complete_unloading':'Complete Unloading',
+        'action.start_new':         'Start New Demo',
+        'action.show_pass':         'Show Pass',
+        'action.report_issue':      'Report Issue',
+        'action.undo':              'Undo last action',
+
+        'complete.title':         'Pickup Run Completed',
+        'complete.subtitle':      'All vehicles and photos have been synced.',
+        'complete.completion_id': 'Completion ID',
+        'complete.vehicles':      'Vehicles delivered',
+        'complete.photos':        'Photos',
+        'complete.distance':      'Distance',
+        'complete.synced':        'Synced',
+        'complete.summary_title': 'Vehicles Delivered',
+
+        'present.title':         'Authorized Trailer Pass',
+        'present.service':       'Trailer Pickup',
+        'present.run':           'Pickup Run',
+        'present.trailer_plate': 'Trailer Plate',
+        'present.pass_id':       'Pass ID',
+        'present.capacity':      'Capacity',
+        'present.vehicles':      'vehicles',
+        'present.issued':        'Issued',
+        'present.driver':        'Driver',
+        'present.trailer':       'Trailer',
+        'present.verified':      'Verified',
+        'present.verify_msg':    'Verify the driver and trailer plate before releasing the vehicles.',
+
+        'photo_modal.title':     'Capture',
+        'photo_modal.subtitle':  'Photos are uploaded automatically and used for billing & dispute resolution.',
+        'photo_modal.frame':     'Frame the subject within the box',
+        'photo_modal.btn':       'Capture Photo',
+
+        'issue.title':       'Report an Issue',
+        'issue.subtitle':    'Our logistics team will be notified immediately.',
+        'issue.opt1.title':  'Store partner not available',
+        'issue.opt1.body':   'Closed, unattended, or no key handover',
+        'issue.opt2.title':  "Wrong location / can't access",
+        'issue.opt2.body':   'Address inaccurate or restricted',
+        'issue.opt3.title':  'Vehicle not at pickup',
+        'issue.opt3.body':   'A vehicle on the manifest is missing',
+        'issue.cancel.title':'Request cancellation',
+        'issue.cancel.body': 'Logistics will reroute / reassign',
+
+        'demo.title':    'Demo: jump to state',
+        'demo.load_all': 'Auto-load all vehicles',
+        'demo.reset':    'Reset demo data',
+      },
+
+      ms: {
+        'brand.label': 'Pas Treler',
+
+        'status.new':         'Pas Baru',
+        'status.loading':     'Memuatkan',
+        'status.in_transit':  'Dalam Transit',
+        'status.at_dropoff':  'Di Destinasi',
+        'status.completed':   'Selesai',
+
+        'step.issued':       'Dikeluarkan',
+        'step.loading':      'Memuatkan',
+        'step.in_transit':   'Transit',
+        'step.at_dropoff':   'Destinasi',
+        'step.completed':    'Selesai',
+
+        'common.trailer':       'Treler',
+        'common.driver':        'Pemandu',
+        'common.dropoff':       'Destinasi',
+        'common.store_partner': 'Rakan Kedai',
+        'common.open_maps':     'Buka di Maps',
+        'common.min':           'minit',
+        'common.km':            'km',
+        'common.vehicles':      'kenderaan',
+        'common.vehicle':       'kenderaan',
+
+        'issued.tag':            'Tugasan pickup baru',
+        'issued.title':          'Anda telah ditugaskan untuk sesi pickup',
+        'issued.subtitle':       'Kutip kenderaan di bawah dari rakan kedai.',
+        'issued.summary_title':  'Ringkasan Pickup',
+        'issued.stat_vehicles':  'Kenderaan',
+        'issued.stat_capacity':  'Kapasiti',
+        'issued.stat_distance':  'Jarak',
+        'issued.reminder_title': 'Peringatan',
+        'issued.reminder_body':  'Kenderaan boleh diambil dalam sebarang susunan di rakan kedai.',
+        'issued.pickup_title':   'Lokasi Pickup',
+
+        'expected.title':         'Kenderaan untuk Diambil',
+        'expected.subtitle':      'Ditugaskan untuk treler ini.',
+
+        'loaded.title':           'Kenderaan Dimuatkan',
+        'loaded.subtitle':        'Kenderaan yang anda telah muatkan ke treler.',
+        'loaded.empty':           'Tiada kenderaan dimuatkan lagi.',
+        'loaded.empty_hint':      'Ketuk butang di atas untuk mula muatkan.',
+        'loaded.remove':          'Buang',
+        'loaded.remove_confirm':  'Buang kenderaan ini dari treler?',
+        'loaded.at':              'pada',
+        'loaded.photos_count':    '{n} gambar',
+        'loaded.add_vehicle':     '+ Muat Kenderaan',
+
+        'load.title':         'Muatkan Kenderaan ke Treler',
+        'load.subtitle':      'Masukkan nombor plat dan ambil gambar.',
+        'load.plate_label':   'Nombor Plat',
+        'load.photos_label':  'Gambar',
+        'load.photo_vehicle': 'Kenderaan',
+        'load.photo_plate':   'Plat Dekat',
+        'load.submit':        'Muatkan Kenderaan',
+        'load.help':          'Pastikan plat kelihatan jelas dalam gambar.',
+        'load.duplicate_title':'Sudah dimuatkan',
+        'load.duplicate_body': 'Plat ini telah dimasukkan ke treler.',
+
+        'success.title':      'Kenderaan Dimuatkan',
+        'success.body':       'Kenderaan telah ditambah ke treler.',
+
+        'transit.title':         'Menuju ke Destinasi',
+        'transit.summary':       'Ringkasan Treler',
+        'transit.loaded_label':  'Dimuatkan',
+        'transit.skipped_label': 'Dilangkau',
+
+        'dropoff.tag':           'Telah tiba di destinasi',
+        'dropoff.body':          'Ambil gambar treler untuk mengesahkan ketibaan.',
+        'dropoff.photos_title':  'Gambar Ketibaan Treler',
+        'dropoff.photos_subtitle': 'Tangkap bahagian depan dan belakang treler.',
+        'dropoff.note':          'Tangkap kedua-dua gambar untuk teruskan.',
+        'photos.angle.front':    'Depan Treler',
+        'photos.angle.rear':     'Belakang Treler',
+
+        'eta.title':         'Anggaran ketibaan',
+        'eta.in':            'dalam',
+        'eta.tap_to_edit':   'Ketuk untuk edit masa ketibaan',
+        'eta.upload_waze':   'Muat Naik Skrin Waze',
+        'eta.set_time_title':'Set masa ketibaan',
+        'eta.set_time_body': 'Masukkan masa anda dijangka tiba.',
+        'eta.apply':         'Sah',
+        'eta.waze_uploaded': 'Skrin Waze dilampirkan',
+        'eta.target':        'di',
+
+        'action.start_run':         'Mula Sesi Pickup',
+        'action.depart_dropoff':    'Bertolak ke Destinasi',
+        'action.arrived_dropoff':   'Saya Telah Tiba di Destinasi',
+        'action.complete_unloading':'Selesaikan Penurunan',
+        'action.start_new':         'Mula Demo Baru',
+        'action.show_pass':         'Tunjuk Pas',
+        'action.report_issue':      'Laporkan Isu',
+        'action.undo':              'Buat asal tindakan terakhir',
+
+        'complete.title':         'Sesi Pickup Selesai',
+        'complete.subtitle':      'Semua kenderaan dan gambar telah disegerakkan.',
+        'complete.completion_id': 'ID Penyelesaian',
+        'complete.vehicles':      'Kenderaan dihantar',
+        'complete.photos':        'Gambar',
+        'complete.distance':      'Jarak',
+        'complete.synced':        'Disegerakkan',
+        'complete.summary_title': 'Kenderaan Dihantar',
+
+        'present.title':         'Pas Treler Sah',
+        'present.service':       'Pickup Treler',
+        'present.run':           'Sesi Pickup',
+        'present.trailer_plate': 'Plat Treler',
+        'present.pass_id':       'ID Pas',
+        'present.capacity':      'Kapasiti',
+        'present.vehicles':      'kenderaan',
+        'present.issued':        'Dikeluarkan',
+        'present.driver':        'Pemandu',
+        'present.trailer':       'Treler',
+        'present.verified':      'Disahkan',
+        'present.verify_msg':    'Sahkan pemandu dan plat treler sebelum melepaskan kenderaan.',
+
+        'photo_modal.title':     'Tangkap',
+        'photo_modal.subtitle':  'Foto dimuat naik secara automatik untuk pengebilan & penyelesaian pertikaian.',
+        'photo_modal.frame':     'Letakkan subjek dalam kotak',
+        'photo_modal.btn':       'Tangkap Foto',
+
+        'issue.title':       'Laporkan Isu',
+        'issue.subtitle':    'Pasukan logistik kami akan dimaklumkan dengan segera.',
+        'issue.opt1.title':  'Rakan kedai tidak ada',
+        'issue.opt1.body':   'Tutup, tiada penjaga, atau tiada serahan kunci',
+        'issue.opt2.title':  'Lokasi salah / tidak boleh akses',
+        'issue.opt2.body':   'Alamat tidak tepat atau terhad',
+        'issue.opt3.title':  'Kenderaan tiada di pickup',
+        'issue.opt3.body':   'Kenderaan dalam manifes tiada di lokasi',
+        'issue.cancel.title':'Mohon pembatalan',
+        'issue.cancel.body': 'Logistik akan tugas semula',
+
+        'demo.title':    'Demo: lompat ke status',
+        'demo.load_all': 'Muat semua kenderaan',
+        'demo.reset':    'Set semula data demo',
+      },
+    };
+
+    const LANG_KEY = 'trailerpass.lang';
+    let lang = localStorage.getItem(LANG_KEY) || 'en';
+    function t(key, vars) {
+      let v = (i18n[lang] && i18n[lang][key]) || (i18n.en[key] || key);
+      if (vars) for (const k in vars) v = v.replace('{' + k + '}', vars[k]);
+      return v;
+    }
+    function setLang(next) {
+      lang = next;
+      localStorage.setItem(LANG_KEY, lang);
+      document.documentElement.lang = lang;
+      render();
+    }
+
+    // ===============================================================
+    // STATE / STEPS
+    // ===============================================================
+    const STEPS = [
+      { id: 'issued',      statusKey: 'status.new',         stepKey: 'step.issued' },
+      { id: 'loading',     statusKey: 'status.loading',     stepKey: 'step.loading' },
+      { id: 'in_transit',  statusKey: 'status.in_transit',  stepKey: 'step.in_transit' },
+      { id: 'at_dropoff',  statusKey: 'status.at_dropoff',  stepKey: 'step.at_dropoff' },
+      { id: 'completed',   statusKey: 'status.completed',   stepKey: 'step.completed' },
+    ];
+
+    const ARRIVAL_ANGLES = ['front', 'rear'];
+
+    // ===============================================================
+    // CASE DATA (mock — would come from API)
+    // ===============================================================
+    const CASE = {
+      passId: 'TR-2026-005678',
+      driver: { name: 'Rizal Zainuddin', initials: 'RZ' },
+      trailer: { plate: 'WGK 9921', capacity: 8 },
+      // Trailer collects all vehicles from a single store partner.
+      pickup: { title: 'Auto World KL', address: 'Lot 12, Jalan Pudu, 50100 Kuala Lumpur', contact: '+60 3-2148 9000' },
+      manifest: [
+        { id: 'v1', plate: 'WXY 1234', makeModel: 'Honda City',     color: 'Silver' },
+        { id: 'v2', plate: 'ABC 5678', makeModel: 'Toyota Vios',    color: 'Black'  },
+        { id: 'v3', plate: 'JKL 9012', makeModel: 'Perodua Myvi',   color: 'Red'    },
+        { id: 'v4', plate: 'MNO 3456', makeModel: 'Proton X50',     color: 'White'  },
+        { id: 'v5', plate: 'PQR 7890', makeModel: 'Honda Civic',    color: 'Blue'   },
+        { id: 'v6', plate: 'STU 2345', makeModel: 'Toyota Corolla', color: 'Grey'   },
+      ],
+      dropoff: { title: 'Car Medic SS15', address: '12, Jalan SS15/4, Subang Jaya, Selangor' },
+      distanceKm: 22.4,
+    };
+
+    const defaultState = {
+      step: 'issued',
+      etaMinutes: 25,
+      // Driver-entered loaded vehicles (admin reconciles against CASE.manifest off-line).
+      loaded: [],          // [{ id, plate, photos: { vehicle, plate }, ts }]
+      arrivalPhotos: { front: false, rear: false },
+      wazeAttached: false,
+    };
+
+    const STORAGE_KEY = 'trailerpass.demo.state';
+    let state = loadState();
+    let pendingPhoto = null;     // { context, angle, ... }
+    let wazePreviewURL = null;
+    let pendingLoad = null;      // { plate, photos: {vehicle, plate} }
+
+    function clone(o) { return JSON.parse(JSON.stringify(o)); }
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return clone(defaultState);
+        return { ...clone(defaultState), ...JSON.parse(raw) };
+      } catch { return clone(defaultState); }
+    }
+    function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+    function setStep(id) { state.step = id; saveState(); render(); }
+    function goBack() {
+      const idx = STEPS.findIndex(s => s.id === state.step);
+      if (idx > 0) setStep(STEPS[idx - 1].id);
+    }
+    function resetDemo() {
+      localStorage.removeItem(STORAGE_KEY);
+      state = clone(defaultState);
+      wazePreviewURL = null;
+      render();
+    }
+    function loadAllDemo() {
+      // Quick-fill demo: pretend driver has loaded all manifest vehicles.
+      const now = Date.now();
+      state.loaded = CASE.manifest.map((v, i) => ({
+        id: 'L' + (now + i),
+        plate: v.plate,
+        photos: { vehicle: true, plate: true },
+        ts: now - (CASE.manifest.length - i) * 90000,
+      }));
+      saveState();
+      render();
+    }
+
+    // ===============================================================
+    // HELPERS
+    // ===============================================================
+    function pad2(n) { return String(n).padStart(2, '0'); }
+    function arrivalTimeStr() {
+      const d = new Date(Date.now() + state.etaMinutes * 60000);
+      return pad2(d.getHours()) + ':' + pad2(d.getMinutes());
+    }
+    function normPlate(p) { return (p || '').replace(/\s+/g, '').toUpperCase(); }
+    function loadedCount() { return state.loaded.length; }
+    function isDuplicatePlate(plate) {
+      const n = normPlate(plate);
+      return state.loaded.some(e => normPlate(e.plate) === n);
+    }
+    function totalPhotos() {
+      // 2 per loaded vehicle + arrival photos
+      return loadedCount() * 2 + Object.values(state.arrivalPhotos).filter(Boolean).length;
+    }
+    function fmtTime(ts) {
+      const d = new Date(ts);
+      return pad2(d.getHours()) + ':' + pad2(d.getMinutes());
+    }
+
+    // ===============================================================
+    // RENDER
+    // ===============================================================
+    function render() {
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        el.textContent = t(el.getAttribute('data-i18n'));
+      });
+      document.getElementById('brandLabel').textContent = t('brand.label');
+      document.querySelectorAll('.lang-btn').forEach(b => {
+        const isActive = b.dataset.lang === lang;
+        b.className = 'lang-btn px-2.5 py-1 rounded-full transition ' +
+          (isActive ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500');
+      });
+
+      renderStatusBadge();
+      renderStepStrip();
+      renderView();
+      renderActionBar();
+      renderDemoPanel();
+
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function renderStatusBadge() {
+      const meta = STEPS.find(s => s.id === state.step);
+      const tone = state.step === 'completed' ? 'emerald'
+                 : state.step === 'issued'    ? 'slate'
+                 : 'amber';
+      const tones = { slate: 'bg-slate-100 text-slate-700', amber: 'bg-amber-100 text-amber-800', emerald: 'bg-emerald-100 text-emerald-800' };
+      const dots  = { slate: 'bg-slate-400',                amber: 'bg-amber-500',                emerald: 'bg-emerald-500' };
+      const pulse = (tone === 'amber') ? 'animate-pulse-soft' : '';
+      document.getElementById('statusBadge').innerHTML = `
+        <div class="px-2.5 py-1 rounded-full text-xs font-semibold ${tones[tone]} flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full ${dots[tone]} ${pulse}"></span>
+          ${t(meta.statusKey)}
+        </div>`;
+    }
+
+    function renderStepStrip() {
+      const idx = STEPS.findIndex(s => s.id === state.step);
+      document.getElementById('stepStrip').innerHTML = STEPS.map((s, i) => {
+        const done = i < idx, active = i === idx;
+        const color = done ? 'bg-emerald-500' : active ? 'bg-brand-600' : 'bg-slate-200';
+        return `<div class="flex-1 h-1.5 rounded-full ${color}"></div>`;
+      }).join('');
+    }
+
+    function renderView() {
+      const v = document.getElementById('view');
+      v.scrollTop = 0;
+      let html = '';
+      switch (state.step) {
+        case 'issued':     html = viewIssued(); break;
+        case 'loading':    html = viewLoading(); break;
+        case 'in_transit': html = viewTransit(); break;
+        case 'at_dropoff': html = viewDropoff(); break;
+        case 'completed':  html = viewCompleted(); break;
+      }
+      v.innerHTML = `<div class="animate-fade-in">${html}</div>`;
+    }
+
+    // ---------- shared partials ----------
+    function locationCard(kind) {
+      const isPickup = kind === 'pickup';
+      const data = isPickup ? CASE.pickup : CASE.dropoff;
+      if (!data) return '';
+      const label = isPickup ? t('common.store_partner') : t('common.dropoff');
+      const icon  = isPickup ? 'store' : 'flag';
+      const tone  = isPickup ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700';
+      return `
+        <div class="rounded-2xl bg-white border border-slate-200 shadow-card p-4">
+          <div class="flex items-start gap-3">
+            <div class="w-10 h-10 rounded-xl ${tone} grid place-items-center shrink-0">
+              <i data-lucide="${icon}" class="w-5 h-5"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="text-xs uppercase tracking-wider text-slate-500">${label}</div>
+              <div class="font-semibold text-slate-900 leading-tight">${data.title}</div>
+              <div class="text-sm text-slate-500 mt-0.5">${data.address}</div>
+            </div>
+          </div>
+          <div class="mt-3 grid grid-cols-${isPickup && data.contact ? '2' : '1'} gap-2">
+            <button class="h-10 rounded-xl bg-slate-100 hover:bg-slate-200 transition flex items-center justify-center gap-2 text-sm font-semibold text-slate-700">
+              <i data-lucide="navigation" class="w-4 h-4"></i> ${t('common.open_maps')}
+            </button>
+            ${isPickup && data.contact ? `
+              <a href="tel:${data.contact}" class="h-10 rounded-xl bg-emerald-500 hover:bg-emerald-600 transition flex items-center justify-center gap-2 text-sm font-semibold text-white">
+                <i data-lucide="phone" class="w-4 h-4"></i> Call store
+              </a>` : ''}
+          </div>
+        </div>`;
+    }
+
+    function mapPreview() {
+      return `
+        <div class="rounded-2xl border border-slate-200 shadow-card overflow-hidden">
+          <div class="map-bg aspect-[16/10] relative">
+            <div class="absolute inset-0 grid place-items-center">
+              <div class="px-3 py-1.5 rounded-full bg-white/95 text-xs font-semibold text-slate-700 shadow flex items-center gap-1.5">
+                <i data-lucide="route" class="w-4 h-4 text-brand-600"></i>
+                ETA · <span id="mapEta">${state.etaMinutes}</span> ${t('common.min')} · ${CASE.distanceKm} ${t('common.km')}
+              </div>
+            </div>
+            <div class="absolute left-6 top-6 w-7 h-7 rounded-full bg-amber-500 grid place-items-center text-white shadow-float">
+              <i data-lucide="store" class="w-4 h-4"></i>
+            </div>
+            <div class="absolute right-6 bottom-6 w-7 h-7 rounded-full bg-emerald-500 grid place-items-center text-white shadow-float">
+              <i data-lucide="flag" class="w-4 h-4"></i>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function etaCard(target) {
+      const targetTitle = CASE.dropoff.title;
+      const wazeBlock = state.wazeAttached
+        ? `<div class="mt-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-3 flex items-center gap-3">
+             ${wazePreviewURL
+               ? `<img src="${wazePreviewURL}" alt="Waze" class="w-14 h-14 rounded-xl object-cover" />`
+               : `<div class="w-14 h-14 rounded-xl bg-emerald-100 grid place-items-center text-emerald-700"><i data-lucide="image" class="w-6 h-6"></i></div>`}
+             <div class="flex-1 min-w-0">
+               <div class="text-xs font-semibold text-emerald-700 uppercase tracking-wider">Waze</div>
+               <div class="text-sm font-semibold text-slate-900 truncate">${t('eta.waze_uploaded')}</div>
+             </div>
+             <button onclick="removeWaze()" class="w-9 h-9 rounded-full bg-white hover:bg-rose-50 text-rose-600 grid place-items-center border border-slate-200">
+               <i data-lucide="trash-2" class="w-4 h-4"></i>
+             </button>
+           </div>`
+        : '';
+
+      return `
+        <div class="rounded-3xl bg-white border border-slate-200 shadow-card p-4">
+          <div class="text-xs uppercase tracking-wider text-slate-500 mb-2">${t('eta.title')}</div>
+
+          <button onclick="openEtaTimeModal()"
+                  class="w-full text-left rounded-2xl border-2 border-slate-200 hover:border-brand-500 hover:bg-brand-50 active:bg-brand-100 transition p-4 group">
+            <div class="flex items-center gap-3">
+              <div class="flex-1 min-w-0">
+                <div class="text-5xl font-extrabold tracking-tight text-slate-900 leading-none">
+                  <span id="etaArrives">${arrivalTimeStr()}</span>
+                </div>
+                <div class="text-xs text-slate-500 mt-2">
+                  ${t('eta.in')} <span id="etaValue" class="font-semibold text-slate-700">${state.etaMinutes}</span> ${t('common.min')}
+                </div>
+                <div class="text-xs text-slate-500 mt-0.5 truncate">${t('eta.target')} ${targetTitle}</div>
+              </div>
+              <div class="w-10 h-10 rounded-xl bg-slate-100 group-hover:bg-brand-100 grid place-items-center transition shrink-0">
+                <i data-lucide="pencil" class="w-4 h-4 text-slate-600 group-hover:text-brand-700"></i>
+              </div>
+            </div>
+            <div class="text-[11px] text-brand-600 font-semibold mt-3 flex items-center gap-1">
+              <i data-lucide="clock" class="w-3.5 h-3.5"></i> ${t('eta.tap_to_edit')}
+            </div>
+          </button>
+
+          <button onclick="openWazeUpload()" class="mt-3 w-full h-12 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 font-semibold flex items-center justify-center gap-2 transition border border-amber-100">
+            <i data-lucide="upload" class="w-4 h-4"></i> ${t('eta.upload_waze')}
+          </button>
+
+          ${wazeBlock}
+        </div>`;
+    }
+
+    // ---------- expected list (issued state — info-only, no plates) ----------
+    function expectedItemCard(item, idx) {
+      return `
+        <div class="rounded-2xl bg-white border border-slate-200 p-3 flex items-center gap-3">
+          <div class="w-8 h-8 rounded-full bg-slate-100 grid place-items-center text-xs font-bold text-slate-500 shrink-0">${idx + 1}</div>
+          <div class="flex-1 min-w-0">
+            <div class="font-semibold text-slate-900 truncate">${item.makeModel}</div>
+            <div class="text-xs text-slate-500">${item.color}</div>
+          </div>
+        </div>`;
+    }
+
+    function expectedList() {
+      const items = CASE.manifest.map(expectedItemCard).join('');
+      return `
+        <div class="space-y-3">
+          <div class="px-1">
+            <div class="font-semibold text-base">${t('expected.title')} (${CASE.manifest.length})</div>
+            <div class="text-xs text-slate-500">${t('expected.subtitle')}</div>
+          </div>
+          <div class="space-y-2">
+            ${items}
+          </div>
+        </div>`;
+    }
+
+    // ---------- loaded list (loading / transit / dropoff / completed) ----------
+    function loadedEntryCard(entry, opts) {
+      const removable = opts && opts.removable;
+      const photoCount = Object.values(entry.photos || {}).filter(Boolean).length;
+      return `
+        <div class="rounded-2xl bg-white border-2 border-emerald-300 shadow-card p-3 flex items-center gap-3">
+          <div class="w-9 h-9 rounded-full bg-emerald-500 grid place-items-center shrink-0">
+            <i data-lucide="check" class="w-4 h-4 text-white"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="font-mono font-bold tracking-widest text-slate-900 text-base">${entry.plate}</div>
+            <div class="text-[11px] text-slate-500 flex items-center gap-2">
+              <span>${t('loaded.at')} ${fmtTime(entry.ts)}</span>
+              <span class="inline-flex items-center gap-1">
+                <i data-lucide="image" class="w-3 h-3"></i> ${t('loaded.photos_count', { n: photoCount })}
+              </span>
+            </div>
+          </div>
+          ${removable ? `
+            <button onclick="removeLoaded('${entry.id}')" aria-label="${t('loaded.remove')}"
+                    class="w-9 h-9 rounded-full bg-slate-50 hover:bg-rose-50 hover:text-rose-600 text-slate-500 grid place-items-center transition border border-slate-200">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>` : ''}
+        </div>`;
+    }
+
+    function loadedList(opts) {
+      const total = CASE.manifest.length;
+      const loaded = loadedCount();
+      const items = state.loaded.length === 0
+        ? `<div class="rounded-2xl border-2 border-dashed border-slate-200 p-6 text-center">
+             <div class="w-10 h-10 rounded-full bg-slate-100 mx-auto grid place-items-center mb-2">
+               <i data-lucide="package" class="w-5 h-5 text-slate-400"></i>
+             </div>
+             <div class="text-sm font-semibold text-slate-700">${t('loaded.empty')}</div>
+             <div class="text-xs text-slate-500 mt-0.5">${t('loaded.empty_hint')}</div>
+           </div>`
+        : `<div class="space-y-2">${state.loaded.map(e => loadedEntryCard(e, opts)).join('')}</div>`;
+
+      return `
+        <div class="space-y-3">
+          <div class="flex items-end justify-between gap-3 px-1">
+            <div>
+              <div class="font-semibold text-base">${t('loaded.title')}</div>
+              <div class="text-xs text-slate-500">${t('loaded.subtitle')}</div>
+            </div>
+            <div class="text-right">
+              <div class="text-2xl font-extrabold leading-none ${loaded === total ? 'text-emerald-600' : 'text-slate-900'}">${loaded}/${total}</div>
+              <div class="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">${t('transit.loaded_label')}</div>
+            </div>
+          </div>
+          ${items}
+        </div>`;
+    }
+
+    // ---------- views ----------
+    function viewIssued() {
+      return `
+        <div class="px-5 pt-5 pb-6 space-y-4">
+          <div class="rounded-3xl bg-gradient-to-br from-brand-600 to-brand-900 text-white p-5 shadow-card relative overflow-hidden">
+            <div class="absolute -right-8 -bottom-8 opacity-10">
+              <i data-lucide="container" class="w-40 h-40"></i>
+            </div>
+            <div class="relative">
+              <div class="text-xs font-semibold uppercase tracking-widest opacity-80">${t('issued.tag')}</div>
+              <h1 class="text-2xl font-extrabold mt-1 leading-tight">${t('issued.title')}</h1>
+              <p class="text-sm opacity-90 mt-1">${t('issued.subtitle')}</p>
+            </div>
+          </div>
+
+          <!-- Pickup summary -->
+          <div class="rounded-3xl bg-white border border-slate-200 shadow-card p-4">
+            <div class="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-3">${t('issued.summary_title')}</div>
+            <div class="grid grid-cols-3 gap-3">
+              <div>
+                <div class="text-2xl font-extrabold text-slate-900">${CASE.manifest.length}</div>
+                <div class="text-[11px] uppercase tracking-wider text-slate-500 font-semibold">${t('issued.stat_vehicles')}</div>
+              </div>
+              <div>
+                <div class="text-2xl font-extrabold text-slate-900">${CASE.manifest.length}<span class="text-sm font-bold text-slate-500">/${CASE.trailer.capacity}</span></div>
+                <div class="text-[11px] uppercase tracking-wider text-slate-500 font-semibold">${t('issued.stat_capacity')}</div>
+              </div>
+              <div>
+                <div class="text-2xl font-extrabold text-slate-900">${CASE.distanceKm}<span class="text-sm font-bold text-slate-500"> km</span></div>
+                <div class="text-[11px] uppercase tracking-wider text-slate-500 font-semibold">${t('issued.stat_distance')}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Trailer info -->
+          <div class="rounded-2xl bg-white border border-slate-200 shadow-card p-4 flex items-center gap-3">
+            <div class="w-12 h-12 rounded-xl bg-slate-900 text-white grid place-items-center shrink-0">
+              <i data-lucide="container" class="w-6 h-6"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="text-xs uppercase tracking-wider text-slate-500">${t('common.trailer')}</div>
+              <div class="font-semibold truncate">${CASE.trailer.plate} · ${CASE.trailer.capacity} ${t('common.vehicles')}</div>
+            </div>
+          </div>
+
+          ${locationCard('pickup')}
+          ${expectedList()}
+          ${locationCard('dropoff')}
+
+          <div class="rounded-2xl bg-amber-50 border border-amber-200 p-4 flex gap-3">
+            <i data-lucide="info" class="w-5 h-5 text-amber-700 shrink-0 mt-0.5"></i>
+            <div class="text-sm text-amber-900">
+              <div class="font-semibold">${t('issued.reminder_title')}</div>
+              ${t('issued.reminder_body')}
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function viewLoading() {
+      const loaded = loadedCount(), total = CASE.manifest.length;
+
+      return `
+        <div class="px-5 pt-5 pb-6 space-y-4">
+
+          ${locationCard('pickup')}
+
+          <!-- Big load button -->
+          <button onclick="openLoadModal()" class="w-full rounded-3xl bg-gradient-to-br from-brand-600 to-brand-900 text-white p-5 shadow-card text-left active:scale-[.98] transition flex items-center gap-4">
+            <div class="w-14 h-14 rounded-2xl bg-white/15 grid place-items-center">
+              <i data-lucide="plus" class="w-7 h-7"></i>
+            </div>
+            <div class="flex-1">
+              <div class="text-xs font-semibold uppercase tracking-widest opacity-80">${loaded}/${total} · ${t('transit.loaded_label')}</div>
+              <div class="text-xl font-extrabold leading-tight">${t('loaded.add_vehicle')}</div>
+            </div>
+            <i data-lucide="arrow-right" class="w-5 h-5 opacity-70"></i>
+          </button>
+
+          ${loadedList({ removable: true })}
+
+          <div class="grid grid-cols-2 gap-2">
+            <button onclick="openPresent()" class="h-12 rounded-2xl bg-slate-900 text-white font-semibold flex items-center justify-center gap-2">
+              <i data-lucide="id-card" class="w-4 h-4"></i> ${t('action.show_pass')}
+            </button>
+            <button onclick="openIssue()" class="h-12 rounded-2xl bg-white border border-slate-200 text-slate-700 font-semibold flex items-center justify-center gap-2">
+              <i data-lucide="alert-triangle" class="w-4 h-4"></i> ${t('action.report_issue')}
+            </button>
+          </div>
+        </div>`;
+    }
+
+    function viewTransit() {
+      return `
+        <div class="px-5 pt-5 pb-6 space-y-4">
+          ${mapPreview()}
+          ${etaCard()}
+
+          <!-- Trailer summary -->
+          <div class="rounded-3xl bg-white border border-slate-200 shadow-card p-4">
+            <div class="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-3">${t('transit.summary')}</div>
+            <div class="grid grid-cols-3 gap-3">
+              <div>
+                <div class="text-2xl font-extrabold text-emerald-600">${loadedCount()}</div>
+                <div class="text-[11px] uppercase tracking-wider text-slate-500 font-semibold">${t('transit.loaded_label')}</div>
+              </div>
+              <div>
+                <div class="text-2xl font-extrabold text-slate-900">${CASE.trailer.capacity}</div>
+                <div class="text-[11px] uppercase tracking-wider text-slate-500 font-semibold">${t('issued.stat_capacity')}</div>
+              </div>
+              <div>
+                <div class="text-2xl font-extrabold text-slate-900">${CASE.distanceKm}<span class="text-sm font-bold text-slate-500"> km</span></div>
+                <div class="text-[11px] uppercase tracking-wider text-slate-500 font-semibold">${t('issued.stat_distance')}</div>
+              </div>
+            </div>
+          </div>
+
+          ${loadedList()}
+          ${locationCard('dropoff')}
+
+          <div class="grid grid-cols-2 gap-2">
+            <button onclick="openPresent()" class="h-12 rounded-2xl bg-slate-900 text-white font-semibold flex items-center justify-center gap-2">
+              <i data-lucide="id-card" class="w-4 h-4"></i> ${t('action.show_pass')}
+            </button>
+            <button onclick="openIssue()" class="h-12 rounded-2xl bg-white border border-slate-200 text-slate-700 font-semibold flex items-center justify-center gap-2">
+              <i data-lucide="alert-triangle" class="w-4 h-4"></i> ${t('action.report_issue')}
+            </button>
+          </div>
+        </div>`;
+    }
+
+    function viewDropoff() {
+      const ready = ARRIVAL_ANGLES.every(a => state.arrivalPhotos[a]);
+      return `
+        <div class="px-5 pt-5 pb-6 space-y-4">
+          <div class="rounded-3xl bg-amber-50 border border-amber-200 p-4 flex gap-3">
+            <div class="w-10 h-10 rounded-xl bg-amber-500 text-white grid place-items-center shrink-0">
+              <i data-lucide="flag" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div class="text-xs font-semibold uppercase tracking-wider text-amber-700">${t('dropoff.tag')}</div>
+              <div class="font-semibold text-slate-900">${CASE.dropoff.title}</div>
+              <div class="text-xs text-slate-600 mt-0.5">${t('dropoff.body')}</div>
+            </div>
+          </div>
+
+          <!-- Trailer arrival photos -->
+          <div class="rounded-3xl bg-white border border-slate-200 shadow-card p-4">
+            <div class="flex items-start justify-between gap-3 mb-1">
+              <div class="font-semibold leading-snug">${t('dropoff.photos_title')}</div>
+              <div class="text-xs font-semibold ${ready ? 'text-emerald-600' : 'text-slate-500'} shrink-0">${Object.values(state.arrivalPhotos).filter(Boolean).length}/2</div>
+            </div>
+            <p class="text-xs text-slate-500 mb-3">${t('dropoff.photos_subtitle')}</p>
+            <div class="grid grid-cols-2 gap-2">
+              ${ARRIVAL_ANGLES.map(a => arrivalPhotoTile(a)).join('')}
+            </div>
+          </div>
+
+          ${loadedList()}
+
+          ${!ready ? `
+            <div class="rounded-2xl bg-slate-50 border border-slate-200 p-3 text-xs text-slate-600 flex items-center gap-2">
+              <i data-lucide="info" class="w-4 h-4 text-slate-500"></i>
+              ${t('dropoff.note')}
+            </div>` : ''}
+        </div>`;
+    }
+
+    function arrivalPhotoTile(angle) {
+      const taken = state.arrivalPhotos[angle];
+      const label = t('photos.angle.' + angle);
+      if (taken) {
+        return `
+          <button onclick="openArrivalPhoto('${angle}')" class="aspect-[4/3] rounded-2xl border border-emerald-200 bg-emerald-50 grid place-items-center relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-br from-slate-300 to-slate-500"></div>
+            <div class="absolute inset-0 bg-black/20"></div>
+            <div class="relative text-white flex flex-col items-center gap-1">
+              <div class="w-8 h-8 rounded-full bg-emerald-500 grid place-items-center">
+                <i data-lucide="check" class="w-5 h-5"></i>
+              </div>
+              <div class="text-xs font-semibold">${label}</div>
+            </div>
+          </button>`;
+      }
+      return `
+        <button onclick="openArrivalPhoto('${angle}')" class="aspect-[4/3] rounded-2xl border-2 border-dashed border-slate-300 photo-empty grid place-items-center hover:border-brand-500 hover:bg-brand-50 transition">
+          <div class="flex flex-col items-center gap-1.5 text-slate-500">
+            <i data-lucide="camera" class="w-6 h-6"></i>
+            <div class="text-xs font-semibold">${label}</div>
+          </div>
+        </button>`;
+    }
+
+    function viewCompleted() {
+      const completionId = 'TRC-2026-' + CASE.passId.split('-').pop();
+      const delivered = loadedCount();
+      return `
+        <div class="px-5 pt-8 pb-6 space-y-5">
+          <div class="text-center">
+            <div class="w-20 h-20 mx-auto rounded-full bg-emerald-100 grid place-items-center">
+              <div class="w-14 h-14 rounded-full bg-emerald-500 grid place-items-center text-white shadow-float">
+                <i data-lucide="check" class="w-8 h-8"></i>
+              </div>
+            </div>
+            <h2 class="text-2xl font-extrabold mt-4">${t('complete.title')}</h2>
+            <p class="text-sm text-slate-600 mt-1">${t('complete.subtitle')}</p>
+          </div>
+
+          <div class="rounded-3xl bg-slate-900 text-white p-5 shadow-card">
+            <div class="text-xs uppercase tracking-widest text-slate-400">${t('complete.completion_id')}</div>
+            <div class="text-2xl font-bold tracking-tight font-mono">${completionId}</div>
+            <div class="grid grid-cols-3 gap-3 mt-4 pt-4 border-t border-white/10 text-sm">
+              <div>
+                <div class="text-xs uppercase tracking-wider text-slate-400">${t('complete.vehicles')}</div>
+                <div class="font-bold">${delivered}</div>
+              </div>
+              <div>
+                <div class="text-xs uppercase tracking-wider text-slate-400">${t('complete.photos')}</div>
+                <div class="font-bold">${totalPhotos()}</div>
+              </div>
+              <div>
+                <div class="text-xs uppercase tracking-wider text-slate-400">${t('complete.distance')}</div>
+                <div class="font-bold">${CASE.distanceKm} km</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="rounded-3xl bg-white border border-slate-200 shadow-card p-4">
+            <div class="font-semibold mb-3">${t('complete.summary_title')}</div>
+            <div class="space-y-2">
+              ${state.loaded.map(entry => `
+                <div class="flex items-center gap-3 py-1.5">
+                  <div class="w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 grid place-items-center"><i data-lucide="check" class="w-3.5 h-3.5"></i></div>
+                  <div class="flex-1 min-w-0">
+                    <div class="font-mono font-bold tracking-widest text-slate-900 text-sm truncate">${entry.plate}</div>
+                    <div class="text-xs text-slate-500">${t('loaded.at')} ${fmtTime(entry.ts)}</div>
+                  </div>
+                  <div class="text-xs text-slate-500 inline-flex items-center gap-1">
+                    <i data-lucide="image" class="w-3.5 h-3.5"></i> 2
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>`;
+    }
+
+    // ===============================================================
+    // ACTION BAR + REVERT
+    // ===============================================================
+    function renderActionBar() {
+      const bar = document.getElementById('actionBar');
+      const idx = STEPS.findIndex(s => s.id === state.step);
+      const canRevert = idx > 0;
+      const primary = primaryButtonHTML();
+
+      const row = canRevert
+        ? `<div class="flex items-center gap-2">
+             <button onclick="goBack()" aria-label="${t('action.undo')}"
+                     class="h-14 w-14 shrink-0 rounded-2xl bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 grid place-items-center transition border border-slate-200">
+               <i data-lucide="undo-2" class="w-5 h-5"></i>
+             </button>
+             <div class="flex-1">${primary}</div>
+           </div>
+           <div class="mt-1.5 text-center">
+             <button onclick="goBack()" class="text-xs text-slate-500 hover:text-slate-700 font-medium inline-flex items-center gap-1">
+               <i data-lucide="rotate-ccw" class="w-3 h-3"></i> ${t('action.undo')}
+             </button>
+           </div>`
+        : primary;
+
+      bar.innerHTML = `<div class="px-5 py-3">${row}</div>`;
+    }
+
+    function primaryButtonHTML() {
+      const btn = (label, icon, onClick, opts = {}) => `
+        <button ${opts.disabled ? 'disabled' : ''} onclick="${onClick}"
+                class="w-full h-14 rounded-2xl font-semibold text-base flex items-center justify-center gap-2 transition
+                       ${opts.disabled
+                          ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                          : (opts.tone === 'success'
+                              ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-card'
+                              : 'bg-brand-600 hover:bg-brand-700 text-white shadow-card')}">
+          <i data-lucide="${icon}" class="w-5 h-5"></i> ${label}
+        </button>`;
+
+      const loaded = loadedCount();
+
+      switch (state.step) {
+        case 'issued':
+          return btn(t('action.start_run'), 'play', "setStep('loading')");
+        case 'loading':
+          return btn(t('action.depart_dropoff'), 'truck', "setStep('in_transit')", { disabled: loaded === 0 });
+        case 'in_transit':
+          return btn(t('action.arrived_dropoff'), 'flag', "setStep('at_dropoff')");
+        case 'at_dropoff': {
+          const ready = ARRIVAL_ANGLES.every(a => state.arrivalPhotos[a]);
+          return btn(t('action.complete_unloading'), 'check-circle-2', "setStep('completed')", { disabled: !ready, tone: 'success' });
+        }
+        case 'completed':
+          return `
+            <button onclick="resetDemo()" class="w-full h-14 rounded-2xl font-semibold text-base flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white shadow-card">
+              <i data-lucide="rotate-ccw" class="w-5 h-5"></i> ${t('action.start_new')}
+            </button>`;
+      }
+    }
+
+    // ===============================================================
+    // LOAD VEHICLE FLOW
+    // ===============================================================
+    function openLoadModal() {
+      pendingLoad = { plate: '', photos: { vehicle: false, plate: false } };
+      document.getElementById('loadPlateInput').value = '';
+      document.getElementById('loadStatusBanner').innerHTML = '';
+      document.getElementById('loadModal').classList.remove('hidden');
+      renderLoadPhotoTiles();
+      updateLoadSubmitState();
+      lucide.createIcons();
+      setTimeout(() => document.getElementById('loadPlateInput').focus(), 50);
+    }
+    function closeLoadModal() {
+      document.getElementById('loadModal').classList.add('hidden');
+      pendingLoad = null;
+    }
+
+    function renderLoadPhotoTiles() {
+      const tile = (kind) => {
+        const taken = pendingLoad && pendingLoad.photos[kind];
+        const label = t('load.photo_' + kind);
+        const icon  = kind === 'plate' ? 'scan-line' : 'car';
+        if (taken) {
+          return `
+            <div class="aspect-[4/3] rounded-2xl border border-emerald-200 bg-emerald-50 grid place-items-center relative overflow-hidden">
+              <div class="absolute inset-0 bg-gradient-to-br from-slate-300 to-slate-500"></div>
+              <div class="absolute inset-0 bg-black/20"></div>
+              <div class="relative text-white flex flex-col items-center gap-1">
+                <div class="w-8 h-8 rounded-full bg-emerald-500 grid place-items-center">
+                  <i data-lucide="check" class="w-5 h-5"></i>
+                </div>
+                <div class="text-xs font-semibold">${label}</div>
+              </div>
+            </div>`;
+        }
+        return `
+          <div class="aspect-[4/3] rounded-2xl border-2 border-dashed border-slate-300 photo-empty grid place-items-center hover:border-brand-500 hover:bg-brand-50 transition">
+            <div class="flex flex-col items-center gap-1.5 text-slate-500">
+              <i data-lucide="${icon}" class="w-6 h-6"></i>
+              <div class="text-xs font-semibold">${label}</div>
+            </div>
+          </div>`;
+      };
+      document.getElementById('loadPhotoVehicle').innerHTML = tile('vehicle');
+      document.getElementById('loadPhotoPlate').innerHTML   = tile('plate');
+      lucide.createIcons();
+    }
+
+    function openLoadPhoto(kind) {
+      pendingPhoto = { context: 'load', kind };
+      document.getElementById('photoModalAngle').textContent = t('load.photo_' + kind);
+      document.getElementById('photoModal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function onPlateInput() {
+      const el = document.getElementById('loadPlateInput');
+      el.value = el.value.toUpperCase();
+      pendingLoad.plate = el.value;
+      // Clear any old status banner when user types again
+      document.getElementById('loadStatusBanner').innerHTML = '';
+      updateLoadSubmitState();
+    }
+
+    function updateLoadSubmitState() {
+      const btn = document.getElementById('loadSubmitBtn');
+      const ready = pendingLoad
+        && pendingLoad.plate.trim().length >= 4
+        && pendingLoad.photos.vehicle
+        && pendingLoad.photos.plate;
+      if (ready) {
+        btn.disabled = false;
+        btn.className = 'w-full h-14 rounded-2xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-base flex items-center justify-center gap-2 transition shadow-card';
+      } else {
+        btn.disabled = true;
+        btn.className = 'w-full h-14 rounded-2xl bg-slate-200 text-slate-400 cursor-not-allowed font-semibold text-base flex items-center justify-center gap-2 transition';
+      }
+    }
+
+    function submitLoad() {
+      if (!pendingLoad) return;
+      const banner = document.getElementById('loadStatusBanner');
+
+      // Only client-side guard: don't let driver enter the same plate twice.
+      if (isDuplicatePlate(pendingLoad.plate)) {
+        banner.innerHTML = `
+          <div class="rounded-2xl border-2 border-amber-200 bg-amber-50 p-4 animate-fade-in">
+            <div class="flex items-start gap-3">
+              <div class="w-9 h-9 rounded-full bg-amber-500 text-white grid place-items-center shrink-0">
+                <i data-lucide="info" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <div class="font-bold text-amber-800">${t('load.duplicate_title')}</div>
+                <div class="text-sm text-amber-700 mt-0.5">${t('load.duplicate_body')}</div>
+              </div>
+            </div>
+          </div>`;
+        lucide.createIcons();
+        return;
+      }
+
+      // Save the entry — admin will reconcile against the system manifest off-line.
+      state.loaded.push({
+        id: 'L' + Date.now(),
+        plate: pendingLoad.plate.trim(),
+        photos: { vehicle: true, plate: true },
+        ts: Date.now(),
+      });
+      saveState();
+      closeLoadModal();
+      showLoadedToast(pendingLoad.plate.trim());
+    }
+
+    function showLoadedToast(plate) {
+      const toast = document.getElementById('successToast');
+      document.getElementById('successBody').textContent =
+        plate + ' · ' + t('success.body');
+      toast.classList.remove('hidden');
+      lucide.createIcons();
+      setTimeout(() => {
+        toast.classList.add('hidden');
+        render();
+      }, 1400);
+    }
+
+    function removeLoaded(id) {
+      if (!confirm(t('loaded.remove_confirm'))) return;
+      state.loaded = state.loaded.filter(e => e.id !== id);
+      saveState();
+      render();
+    }
+
+    // ===============================================================
+    // PHOTO MODAL (shared)
+    // ===============================================================
+    function openArrivalPhoto(angle) {
+      pendingPhoto = { context: 'arrival', angle };
+      document.getElementById('photoModalAngle').textContent = t('photos.angle.' + angle);
+      document.getElementById('photoModal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+    function closePhotoModal() {
+      document.getElementById('photoModal').classList.add('hidden');
+      pendingPhoto = null;
+    }
+    function confirmPhoto() {
+      if (!pendingPhoto) return;
+      if (pendingPhoto.context === 'load') {
+        pendingLoad.photos[pendingPhoto.kind] = true;
+        closePhotoModal();
+        renderLoadPhotoTiles();
+        updateLoadSubmitState();
+      } else if (pendingPhoto.context === 'arrival') {
+        state.arrivalPhotos[pendingPhoto.angle] = true;
+        saveState();
+        closePhotoModal();
+        render();
+      }
+    }
+
+    // ===============================================================
+    // ETA controls
+    // ===============================================================
+    function openEtaTimeModal() {
+      const input = document.getElementById('etaTimeInput');
+      input.value = arrivalTimeStr();
+      document.getElementById('etaTimeModal').classList.remove('hidden');
+      lucide.createIcons();
+      setTimeout(() => { try { input.showPicker && input.showPicker(); } catch(e) {} }, 50);
+    }
+    function closeEtaTimeModal() { document.getElementById('etaTimeModal').classList.add('hidden'); }
+    function applyEtaTime() {
+      const v = document.getElementById('etaTimeInput').value;
+      if (!v) { closeEtaTimeModal(); return; }
+      const [h, m] = v.split(':').map(Number);
+      const target = new Date();
+      target.setHours(h, m, 0, 0);
+      let diff = Math.round((target.getTime() - Date.now()) / 60000);
+      if (diff < 1) diff += 24 * 60;
+      state.etaMinutes = Math.max(1, diff);
+      saveState();
+      closeEtaTimeModal();
+      render();
+    }
+
+    function openWazeUpload() { document.getElementById('wazeFileInput').click(); }
+    function handleWazeFile(e) {
+      const f = e.target.files && e.target.files[0];
+      if (!f) return;
+      state.wazeAttached = true;
+      saveState();
+      if (wazePreviewURL) URL.revokeObjectURL(wazePreviewURL);
+      wazePreviewURL = URL.createObjectURL(f);
+      e.target.value = '';
+      render();
+    }
+    function removeWaze() {
+      state.wazeAttached = false;
+      saveState();
+      if (wazePreviewURL) { URL.revokeObjectURL(wazePreviewURL); wazePreviewURL = null; }
+      render();
+    }
+
+    // ===============================================================
+    // OVERLAYS
+    // ===============================================================
+    function openPresent() {
+      const total = CASE.manifest.length;
+      document.getElementById('presentRunCount').textContent =
+        loadedCount() + '/' + total + ' ' + t('present.vehicles');
+      document.getElementById('presentOverlay').classList.remove('hidden');
+      lucide.createIcons();
+    }
+    function hidePresent() { document.getElementById('presentOverlay').classList.add('hidden'); }
+    function openIssue()   { document.getElementById('issueModal').classList.remove('hidden'); lucide.createIcons(); }
+    function closeIssueModal() { document.getElementById('issueModal').classList.add('hidden'); }
+
+    // ===============================================================
+    // DEMO PANEL
+    // ===============================================================
+    function toggleDemoPanel() { document.getElementById('demoPanel').classList.toggle('hidden'); }
+    function renderDemoPanel() {
+      document.getElementById('demoTitle').textContent = t('demo.title');
+      const wrap = document.getElementById('demoButtons');
+      wrap.innerHTML = STEPS.map(s => `
+        <button onclick="setStep('${s.id}')"
+                class="w-full text-left text-sm px-3 py-2 rounded-lg flex items-center justify-between
+                       ${state.step === s.id ? 'bg-brand-50 text-brand-700 font-semibold' : 'hover:bg-slate-50 text-slate-700'}">
+          <span>${t(s.stepKey)}</span>
+          ${state.step === s.id ? '<i data-lucide=\"check\" class=\"w-4 h-4\"></i>' : ''}
+        </button>
+      `).join('');
+    }
+
+    // ===============================================================
+    // BOOT
+    // ===============================================================
+    document.documentElement.lang = lang;
+    render();
+  </script>
+</body>
+</html>
