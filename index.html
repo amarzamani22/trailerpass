@@ -120,71 +120,148 @@
     <!-- ============================================================= -->
     <!-- PRESENT PASS TO STORE PARTNER                                -->
     <!-- ============================================================= -->
-    <div id="presentOverlay" class="hidden fixed inset-0 z-50 bg-gradient-to-br from-brand-700 via-brand-600 to-brand-900 text-white animate-fade-in flex flex-col safe-top safe-bottom">
-      <div class="p-5 flex items-center justify-between">
-        <div class="flex items-center gap-2 text-sm font-medium opacity-90">
-          <i data-lucide="shield-check" class="w-5 h-5"></i>
+    <div id="presentOverlay" class="hidden fixed inset-0 z-50 bg-slate-950 text-white animate-fade-in flex flex-col safe-top safe-bottom">
+
+      <!-- Sticky header -->
+      <div class="relative z-20 px-4 py-3 flex items-center justify-between bg-slate-950/80 backdrop-blur border-b border-white/5">
+        <button onclick="hidePresent()" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 grid place-items-center transition">
+          <i data-lucide="chevron-left" class="w-5 h-5"></i>
+        </button>
+        <div class="flex items-center gap-2 text-sm font-semibold">
+          <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
           <span data-i18n="present.title"></span>
         </div>
-        <button onclick="hidePresent()" class="w-10 h-10 rounded-full bg-white/15 hover:bg-white/25 grid place-items-center transition">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
+        <img src="images/logo.png" alt="Car Medic"
+             class="w-10 h-10 object-contain shrink-0"
+             onerror="this.outerHTML='<div class=&quot;w-10 h-10 rounded-xl bg-white/10 grid place-items-center&quot;><i data-lucide=&quot;truck&quot; class=&quot;w-5 h-5&quot;></i></div>'; if(window.lucide) lucide.createIcons();" />
       </div>
-      <div class="flex-1 flex flex-col px-6 pb-6 overflow-y-auto">
-        <div class="my-6 flex items-center gap-3">
-          <img src="images/logo.png" alt="Car Medic"
-               class="w-12 h-12 object-contain shrink-0"
-               onerror="this.outerHTML='<div class=&quot;w-12 h-12 rounded-2xl bg-white/15 grid place-items-center&quot;><i data-lucide=&quot;truck&quot; class=&quot;w-6 h-6&quot;></i></div>'; if(window.lucide) lucide.createIcons();" />
-          <div>
-            <div class="text-xs uppercase tracking-widest opacity-70">Car Medic</div>
-            <div class="font-bold text-lg leading-tight" data-i18n="present.service"></div>
-          </div>
-        </div>
 
-        <div class="rounded-3xl bg-white/10 backdrop-blur p-5 border border-white/15">
-          <div class="text-xs uppercase tracking-widest opacity-70 mb-1" data-i18n="present.run"></div>
-          <div class="text-2xl font-bold mb-4" id="presentRunCount"></div>
-          <div class="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <div class="opacity-70 text-xs uppercase tracking-wider" data-i18n="present.trailer_plate"></div>
-              <div class="font-semibold text-base">WGK 9921</div>
-            </div>
-            <div>
-              <div class="opacity-70 text-xs uppercase tracking-wider" data-i18n="present.pass_id"></div>
-              <div class="font-semibold text-base">TR-2026-005678</div>
-            </div>
-            <div>
-              <div class="opacity-70 text-xs uppercase tracking-wider" data-i18n="present.capacity"></div>
-              <div class="font-semibold text-base">8 <span data-i18n="present.vehicles"></span></div>
-            </div>
-            <div>
-              <div class="opacity-70 text-xs uppercase tracking-wider" data-i18n="present.issued"></div>
-              <div class="font-semibold text-base">06 May, 09:30</div>
+      <!-- Scrollable content -->
+      <div class="flex-1 overflow-y-auto pb-8">
+
+        <!-- PASS DETAILS — top, important -->
+        <div class="px-5 pt-4">
+          <div class="rounded-2xl bg-white text-slate-900 p-4 shadow-card">
+            <div class="grid grid-cols-2 gap-3 divide-x divide-slate-200">
+              <div class="pr-2">
+                <div class="text-[10px] uppercase tracking-widest text-slate-500 font-semibold" data-i18n="present.pass_id"></div>
+                <div class="font-mono font-bold text-base mt-0.5">TR-2026-005678</div>
+              </div>
+              <div class="pl-3">
+                <div class="text-[10px] uppercase tracking-widest text-slate-500 font-semibold" data-i18n="present.issued"></div>
+                <div class="font-bold text-base mt-0.5">06 May, 09:30</div>
+              </div>
             </div>
           </div>
         </div>
 
-        <div class="mt-5 rounded-3xl bg-white text-slate-900 p-5 shadow-float">
-          <div class="text-xs uppercase tracking-widest text-slate-500 mb-2" data-i18n="present.driver"></div>
-          <div class="flex items-center gap-3">
-            <div class="w-14 h-14 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 grid place-items-center text-white font-bold text-lg">RZ</div>
-            <div class="flex-1">
-              <div class="font-semibold text-base leading-tight">Rizal Zainuddin</div>
-              <div class="text-xs text-slate-500"><span data-i18n="present.trailer"></span> • WGK 9921</div>
+        <!-- DRIVER HERO (simplified — photo, name, phone, verified) -->
+        <div class="relative mt-4 overflow-hidden">
+          <!-- Premium dark backdrop -->
+          <div class="absolute inset-x-0 top-0 bottom-0 overflow-hidden">
+            <!-- Deep dark base gradient -->
+            <div class="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-950 to-black"></div>
+            <!-- Fine grid (subtle, premium) -->
+            <div class="absolute inset-0 opacity-[0.06]"
+                 style="background-image:
+                   linear-gradient(rgba(255,255,255,1) 1px, transparent 1px),
+                   linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px);
+                   background-size: 36px 36px;"></div>
+            <!-- Single brand spotlight from top-right -->
+            <div class="absolute inset-0"
+                 style="background: radial-gradient(ellipse 70% 70% at 85% 0%, rgba(37,99,235,0.45), transparent 60%);"></div>
+            <!-- Bottom fade -->
+            <div class="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-slate-950 to-transparent"></div>
+          </div>
+
+          <div class="relative px-5 pt-5 pb-5">
+            <!-- Top tag row -->
+            <div class="flex items-center gap-2">
+              <div class="px-2.5 py-1 rounded-full bg-emerald-500 text-white text-[10px] font-bold tracking-widest flex items-center gap-1.5">
+                <i data-lucide="badge-check" class="w-3.5 h-3.5"></i>
+                <span data-i18n="present.verified"></span>
+              </div>
+              <div class="px-2.5 py-1 rounded-full bg-white/15 text-white text-[10px] font-bold tracking-widest" data-i18n="present.service"></div>
             </div>
-            <div class="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold flex items-center gap-1">
-              <i data-lucide="badge-check" class="w-3.5 h-3.5"></i>
-              <span data-i18n="present.verified"></span>
+
+            <!-- Photo + name + phone -->
+            <div class="mt-4 flex items-end justify-between gap-4">
+              <div class="min-w-0">
+                <div class="text-[11px] font-semibold uppercase tracking-widest text-white/70" data-i18n="present.driver"></div>
+                <div class="text-3xl font-extrabold leading-tight mt-0.5">Rizal</div>
+                <div class="text-3xl font-extrabold leading-tight">Zainuddin</div>
+                <a href="tel:+60124567890" class="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/15 hover:bg-white/25 text-sm font-semibold transition">
+                  <i data-lucide="phone" class="w-3.5 h-3.5"></i> +60 12-456 7890
+                </a>
+              </div>
+
+              <div class="relative shrink-0">
+                <div class="absolute inset-0 rounded-full bg-amber-400/40 blur-2xl"></div>
+                <img src="images/driver.jpg" alt="Driver"
+                     class="relative w-28 h-28 rounded-full object-cover ring-4 ring-white/20 shadow-float"
+                     onerror="this.outerHTML='<div class=&quot;relative w-28 h-28 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 grid place-items-center text-white font-extrabold text-3xl ring-4 ring-white/20 shadow-float&quot;>RZ</div>'" />
+              </div>
             </div>
           </div>
         </div>
 
-        <div class="mt-auto pt-6">
-          <div class="flex items-center justify-center gap-2 text-xs opacity-80 text-center">
-            <i data-lucide="lock" class="w-3.5 h-3.5"></i>
-            <span data-i18n="present.verify_msg"></span>
+        <!-- COMBINED CARD: trailer photo + company + details -->
+        <div class="mt-2 px-5">
+          <div class="rounded-3xl bg-white/5 border border-white/10 overflow-hidden">
+
+            <!-- Trailer hero photo -->
+            <div class="aspect-[16/9] bg-gradient-to-br from-slate-700 to-slate-900 relative overflow-hidden">
+              <img src="images/trailer.jpg" alt="Trailer"
+                   class="absolute inset-0 w-full h-full object-cover"
+                   onerror="this.style.display='none'" />
+              <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent"></div>
+              <i data-lucide="container" class="absolute inset-0 m-auto w-16 h-16 text-white/15"></i>
+
+              <!-- Plate badge top-left -->
+              <div class="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-white text-slate-900 text-xs font-bold tracking-widest font-mono">
+                WGK 9921
+              </div>
+              <!-- Model bottom -->
+              <div class="absolute bottom-3 left-3 right-3 text-white">
+                <div class="text-[10px] uppercase tracking-widest opacity-70 font-semibold" data-i18n="present.label.model"></div>
+                <div class="font-bold text-base">Hino 700 · 8-deck</div>
+              </div>
+            </div>
+
+            <!-- Company info -->
+            <div class="p-4 flex items-center gap-3 border-b border-white/10">
+              <img src="images/company.jpg" alt="Company"
+                   class="w-14 h-14 rounded-2xl object-cover bg-white shrink-0"
+                   onerror="this.outerHTML='<div class=&quot;w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-900 grid place-items-center text-white shrink-0&quot;><i data-lucide=&quot;building-2&quot; class=&quot;w-7 h-7&quot;></i></div>'; if(window.lucide) lucide.createIcons();" />
+              <div class="flex-1 min-w-0">
+                <div class="text-[10px] uppercase tracking-widest text-slate-400 font-semibold" data-i18n="present.section.company"></div>
+                <div class="font-bold text-base leading-tight mt-0.5">PB Logistics Sdn. Bhd.</div>
+                <div class="text-xs text-slate-400 mt-0.5"><span data-i18n="present.label.partner_since"></span> 2019</div>
+              </div>
+            </div>
+
+            <!-- Details grid -->
+            <div class="p-4 grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <div class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold" data-i18n="present.label.reg_no"></div>
+                <div class="font-mono font-semibold mt-0.5 text-sm">202301015432</div>
+              </div>
+              <div>
+                <div class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold" data-i18n="present.capacity"></div>
+                <div class="font-semibold mt-0.5">8 <span data-i18n="present.vehicles"></span></div>
+              </div>
+            </div>
           </div>
         </div>
+
+        <!-- VERIFY footer -->
+        <div class="mt-4 mx-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 p-4 flex items-start gap-3">
+          <div class="w-9 h-9 rounded-full bg-emerald-500/20 grid place-items-center shrink-0">
+            <i data-lucide="lock" class="w-4 h-4 text-emerald-400"></i>
+          </div>
+          <div class="text-xs text-emerald-100 leading-relaxed" data-i18n="present.verify_msg"></div>
+        </div>
+
       </div>
     </div>
 
@@ -220,10 +297,15 @@
 
           <!-- Photos -->
           <div>
-            <label class="text-xs uppercase tracking-wider text-slate-500 font-semibold" data-i18n="load.photos_label"></label>
-            <div class="grid grid-cols-2 gap-2 mt-2">
-              <button onclick="openLoadPhoto('vehicle')" id="loadPhotoVehicle"></button>
-              <button onclick="openLoadPhoto('plate')"   id="loadPhotoPlate"></button>
+            <div class="flex items-center justify-between">
+              <label class="text-xs uppercase tracking-wider text-slate-500 font-semibold" data-i18n="load.photos_label"></label>
+              <span id="loadPhotosCounter" class="text-xs font-semibold text-slate-500"></span>
+            </div>
+            <div class="grid grid-cols-4 gap-2 mt-2">
+              <button onclick="openLoadPhoto('front')" id="loadPhotoFront"></button>
+              <button onclick="openLoadPhoto('rear')"  id="loadPhotoRear"></button>
+              <button onclick="openLoadPhoto('left')"  id="loadPhotoLeft"></button>
+              <button onclick="openLoadPhoto('right')" id="loadPhotoRight"></button>
             </div>
           </div>
 
@@ -236,6 +318,37 @@
                   class="w-full h-14 rounded-2xl bg-slate-200 text-slate-400 cursor-not-allowed font-semibold text-base flex items-center justify-center gap-2 transition">
             <i data-lucide="check" class="w-5 h-5"></i>
             <span data-i18n="load.submit"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================= -->
+    <!-- CONFIRM PLATE MODAL                                          -->
+    <!-- ============================================================= -->
+    <div id="confirmPlateModal" class="hidden fixed inset-0 z-[55] bg-slate-950/80 backdrop-blur-sm flex items-end sm:items-center justify-center animate-fade-in">
+      <div class="w-full max-w-md bg-white rounded-t-3xl sm:rounded-3xl p-6 animate-slide-up">
+        <div class="flex justify-center mb-3">
+          <div class="w-14 h-14 rounded-full bg-amber-100 grid place-items-center">
+            <i data-lucide="alert-circle" class="w-7 h-7 text-amber-600"></i>
+          </div>
+        </div>
+        <h3 class="text-lg font-bold text-center" data-i18n="confirm_plate.title"></h3>
+        <p class="text-sm text-slate-600 text-center mt-1" data-i18n="confirm_plate.subtitle"></p>
+
+        <div class="mt-5 rounded-2xl bg-slate-100 border-2 border-slate-200 p-5 text-center">
+          <div class="text-[11px] uppercase tracking-wider text-slate-500 font-semibold mb-1" data-i18n="confirm_plate.plate_label"></div>
+          <div id="confirmPlateDisplay" class="font-mono font-bold tracking-widest text-3xl text-slate-900"></div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 mt-5">
+          <button onclick="cancelPlateConfirm()" class="h-12 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition flex items-center justify-center gap-2">
+            <i data-lucide="pencil" class="w-4 h-4"></i>
+            <span data-i18n="confirm_plate.cancel"></span>
+          </button>
+          <button onclick="confirmPlateAndLoad()" class="h-12 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold transition flex items-center justify-center gap-2 shadow-card">
+            <i data-lucide="check" class="w-4 h-4"></i>
+            <span data-i18n="confirm_plate.confirm"></span>
           </button>
         </div>
       </div>
@@ -383,16 +496,18 @@
         'brand.label': 'Trailer Pass',
 
         'status.new':         'New Pass',
+        'status.en_route':    'En Route',
         'status.loading':     'Loading',
         'status.in_transit':  'In Transit',
         'status.at_dropoff':  'At Drop-off',
         'status.completed':   'Completed',
 
-        'step.issued':       'Issued',
-        'step.loading':      'Loading',
-        'step.in_transit':   'Transit',
-        'step.at_dropoff':   'Drop-off',
-        'step.completed':    'Done',
+        'step.issued':            'Issued',
+        'step.en_route_pickup':   'En route',
+        'step.loading':           'Loading',
+        'step.in_transit':        'Transit',
+        'step.at_dropoff':        'Drop-off',
+        'step.completed':         'Done',
 
         'common.trailer':       'Trailer',
         'common.driver':        'Driver',
@@ -429,15 +544,23 @@
         'loaded.add_vehicle':     '+ Load Vehicle',
 
         'load.title':         'Load Vehicle to Trailer',
-        'load.subtitle':      'Enter the plate number and capture the photos.',
+        'load.subtitle':      'Enter the plate number and capture all 4 photos of the vehicle.',
         'load.plate_label':   'Plate Number',
-        'load.photos_label':  'Photos',
-        'load.photo_vehicle': 'Vehicle',
-        'load.photo_plate':   'Plate Close-up',
+        'load.photos_label':  'Vehicle Photos',
+        'load.angle.front':   'Front',
+        'load.angle.rear':    'Rear',
+        'load.angle.left':    'Left',
+        'load.angle.right':   'Right',
         'load.submit':        'Load Vehicle',
-        'load.help':          'Make sure the plate is clearly visible in the photo.',
+        'load.help':          'Capture all 4 angles to document the vehicle\'s condition.',
         'load.duplicate_title':'Already loaded',
         'load.duplicate_body': 'This plate has already been added to the trailer.',
+
+        'confirm_plate.title':       'Confirm plate number',
+        'confirm_plate.subtitle':    'Please double-check the plate before loading.',
+        'confirm_plate.plate_label': 'Plate you entered',
+        'confirm_plate.cancel':      'Re-check',
+        'confirm_plate.confirm':     'Yes, load vehicle',
 
         'success.title':      'Vehicle Loaded',
         'success.body':       'Vehicle has been added to the trailer.',
@@ -466,6 +589,7 @@
         'eta.target':        'at',
 
         'action.start_run':         'Start Pickup Run',
+        'action.arrived_pickup':    "I've Arrived at Pickup",
         'action.depart_dropoff':    'Depart for Drop-off',
         'action.arrived_dropoff':   "I've Arrived at Drop-off",
         'action.complete_unloading':'Complete Unloading',
@@ -485,7 +609,6 @@
 
         'present.title':         'Authorized Trailer Pass',
         'present.service':       'Trailer Pickup',
-        'present.run':           'Pickup Run',
         'present.trailer_plate': 'Trailer Plate',
         'present.pass_id':       'Pass ID',
         'present.capacity':      'Capacity',
@@ -495,6 +618,25 @@
         'present.trailer':       'Trailer',
         'present.verified':      'Verified',
         'present.verify_msg':    'Verify the driver and trailer plate before releasing the vehicles.',
+
+        'present.section.company':  'Trailer Company',
+        'present.section.driver':   'Driver Profile',
+        'present.section.trailer':  'Trailer',
+        'present.section.pass':     'Pass Details',
+
+        'present.label.license':         'License Class',
+        'present.label.id_badge':        'Driver ID',
+        'present.label.full_name':       'Full Name',
+        'present.label.ic':              'IC No.',
+        'present.label.phone':           'Phone',
+        'present.label.driving_since':   'Driving Since',
+        'present.label.reg_no':          'Reg No.',
+        'present.label.partner_since':   'Authorized partner since',
+        'present.label.model':           'Model',
+
+        'present.stat.jobs':   'Jobs',
+        'present.stat.years':  'Years',
+        'present.stat.rating': 'Rating',
 
         'photo_modal.title':     'Capture',
         'photo_modal.subtitle':  'Photos are uploaded automatically and used for billing & dispute resolution.',
@@ -521,16 +663,18 @@
         'brand.label': 'Pas Treler',
 
         'status.new':         'Pas Baru',
+        'status.en_route':    'Dalam Perjalanan',
         'status.loading':     'Memuatkan',
         'status.in_transit':  'Dalam Transit',
         'status.at_dropoff':  'Di Destinasi',
         'status.completed':   'Selesai',
 
-        'step.issued':       'Dikeluarkan',
-        'step.loading':      'Memuatkan',
-        'step.in_transit':   'Transit',
-        'step.at_dropoff':   'Destinasi',
-        'step.completed':    'Selesai',
+        'step.issued':            'Dikeluarkan',
+        'step.en_route_pickup':   'Dalam perjalanan',
+        'step.loading':           'Memuatkan',
+        'step.in_transit':        'Transit',
+        'step.at_dropoff':        'Destinasi',
+        'step.completed':         'Selesai',
 
         'common.trailer':       'Treler',
         'common.driver':        'Pemandu',
@@ -543,7 +687,7 @@
         'common.vehicle':       'kenderaan',
 
         'issued.tag':            'Tugasan pickup baru',
-        'issued.title':          'Anda telah ditugaskan untuk sesi pickup',
+        'issued.title':          'Anda telah ditugaskan untuk pengambilan kenderaan',
         'issued.subtitle':       'Kutip kenderaan di bawah dari rakan kedai.',
         'issued.summary_title':  'Ringkasan Pickup',
         'issued.stat_vehicles':  'Kenderaan',
@@ -567,15 +711,23 @@
         'loaded.add_vehicle':     '+ Muat Kenderaan',
 
         'load.title':         'Muatkan Kenderaan ke Treler',
-        'load.subtitle':      'Masukkan nombor plat dan ambil gambar.',
+        'load.subtitle':      'Masukkan nombor plat dan ambil kesemua 4 gambar kenderaan.',
         'load.plate_label':   'Nombor Plat',
-        'load.photos_label':  'Gambar',
-        'load.photo_vehicle': 'Kenderaan',
-        'load.photo_plate':   'Plat Dekat',
+        'load.photos_label':  'Gambar Kenderaan',
+        'load.angle.front':   'Depan',
+        'load.angle.rear':    'Belakang',
+        'load.angle.left':    'Kiri',
+        'load.angle.right':   'Kanan',
         'load.submit':        'Muatkan Kenderaan',
-        'load.help':          'Pastikan plat kelihatan jelas dalam gambar.',
+        'load.help':          'Tangkap kesemua 4 sudut untuk dokumentasi keadaan kenderaan.',
         'load.duplicate_title':'Sudah dimuatkan',
         'load.duplicate_body': 'Plat ini telah dimasukkan ke treler.',
+
+        'confirm_plate.title':       'Sahkan nombor plat',
+        'confirm_plate.subtitle':    'Sila semak semula plat sebelum dimuatkan.',
+        'confirm_plate.plate_label': 'Plat yang anda masukkan',
+        'confirm_plate.cancel':      'Semak semula',
+        'confirm_plate.confirm':     'Ya, muatkan kenderaan',
 
         'success.title':      'Kenderaan Dimuatkan',
         'success.body':       'Kenderaan telah ditambah ke treler.',
@@ -604,6 +756,7 @@
         'eta.target':        'di',
 
         'action.start_run':         'Mula Sesi Pickup',
+        'action.arrived_pickup':    'Saya Telah Tiba di Lokasi Ambil',
         'action.depart_dropoff':    'Bertolak ke Destinasi',
         'action.arrived_dropoff':   'Saya Telah Tiba di Destinasi',
         'action.complete_unloading':'Selesaikan Penurunan',
@@ -623,7 +776,6 @@
 
         'present.title':         'Pas Treler Sah',
         'present.service':       'Pickup Treler',
-        'present.run':           'Sesi Pickup',
         'present.trailer_plate': 'Plat Treler',
         'present.pass_id':       'ID Pas',
         'present.capacity':      'Kapasiti',
@@ -633,6 +785,25 @@
         'present.trailer':       'Treler',
         'present.verified':      'Disahkan',
         'present.verify_msg':    'Sahkan pemandu dan plat treler sebelum melepaskan kenderaan.',
+
+        'present.section.company':  'Syarikat Treler',
+        'present.section.driver':   'Profil Pemandu',
+        'present.section.trailer':  'Treler',
+        'present.section.pass':     'Butiran Pas',
+
+        'present.label.license':         'Kelas Lesen',
+        'present.label.id_badge':        'ID Pemandu',
+        'present.label.full_name':       'Nama Penuh',
+        'present.label.ic':              'No. KP',
+        'present.label.phone':           'Telefon',
+        'present.label.driving_since':   'Memandu Sejak',
+        'present.label.reg_no':          'No. Pendaftaran',
+        'present.label.partner_since':   'Rakan kongsi sah sejak',
+        'present.label.model':           'Model',
+
+        'present.stat.jobs':   'Tugasan',
+        'present.stat.years':  'Tahun',
+        'present.stat.rating': 'Penilaian',
 
         'photo_modal.title':     'Tangkap',
         'photo_modal.subtitle':  'Foto dimuat naik secara automatik untuk pengebilan & penyelesaian pertikaian.',
@@ -674,11 +845,12 @@
     // STATE / STEPS
     // ===============================================================
     const STEPS = [
-      { id: 'issued',      statusKey: 'status.new',         stepKey: 'step.issued' },
-      { id: 'loading',     statusKey: 'status.loading',     stepKey: 'step.loading' },
-      { id: 'in_transit',  statusKey: 'status.in_transit',  stepKey: 'step.in_transit' },
-      { id: 'at_dropoff',  statusKey: 'status.at_dropoff',  stepKey: 'step.at_dropoff' },
-      { id: 'completed',   statusKey: 'status.completed',   stepKey: 'step.completed' },
+      { id: 'issued',           statusKey: 'status.new',         stepKey: 'step.issued' },
+      { id: 'en_route_pickup',  statusKey: 'status.en_route',    stepKey: 'step.en_route_pickup' },
+      { id: 'loading',          statusKey: 'status.loading',     stepKey: 'step.loading' },
+      { id: 'in_transit',       statusKey: 'status.in_transit',  stepKey: 'step.in_transit' },
+      { id: 'at_dropoff',       statusKey: 'status.at_dropoff',  stepKey: 'step.at_dropoff' },
+      { id: 'completed',        statusKey: 'status.completed',   stepKey: 'step.completed' },
     ];
 
     const ARRIVAL_ANGLES = ['front', 'rear'];
@@ -688,8 +860,23 @@
     // ===============================================================
     const CASE = {
       passId: 'TR-2026-005678',
-      driver: { name: 'Rizal Zainuddin', initials: 'RZ' },
-      trailer: { plate: 'WGK 9921', capacity: 8 },
+      driver: {
+        name: 'Rizal Zainuddin',
+        initials: 'RZ',
+        licenseClass: 'B',
+        licenseSince: 2019,
+        idBadge: 'DRV-7821',
+        icMasked: '****-****-1234',
+        phone: '+60 12-456 7890',
+        stats: { jobs: 847, years: 6, rating: 4.9 },
+      },
+      company: {
+        name: 'PB Logistics Sdn. Bhd.',
+        sinceYear: 2019,
+        regNo: '202301015432',
+        location: 'Selangor, Malaysia',
+      },
+      trailer: { plate: 'WGK 9921', capacity: 8, model: 'Hino 700 · 8-deck' },
       // Trailer collects all vehicles from a single store partner.
       pickup: { title: 'Auto World KL', address: 'Lot 12, Jalan Pudu, 50100 Kuala Lumpur', contact: '+60 3-2148 9000' },
       manifest: [
@@ -745,7 +932,7 @@
       state.loaded = CASE.manifest.map((v, i) => ({
         id: 'L' + (now + i),
         plate: v.plate,
-        photos: { vehicle: true, plate: true },
+        photos: { front: true, rear: true, left: true, right: true },
         ts: now - (CASE.manifest.length - i) * 90000,
       }));
       saveState();
@@ -767,8 +954,12 @@
       return state.loaded.some(e => normPlate(e.plate) === n);
     }
     function totalPhotos() {
-      // 2 per loaded vehicle + arrival photos
-      return loadedCount() * 2 + Object.values(state.arrivalPhotos).filter(Boolean).length;
+      // sum of per-vehicle photos + arrival photos
+      let n = Object.values(state.arrivalPhotos).filter(Boolean).length;
+      state.loaded.forEach(e => {
+        n += Object.values(e.photos || {}).filter(Boolean).length;
+      });
+      return n;
     }
     function fmtTime(ts) {
       const d = new Date(ts);
@@ -827,11 +1018,12 @@
       v.scrollTop = 0;
       let html = '';
       switch (state.step) {
-        case 'issued':     html = viewIssued(); break;
-        case 'loading':    html = viewLoading(); break;
-        case 'in_transit': html = viewTransit(); break;
-        case 'at_dropoff': html = viewDropoff(); break;
-        case 'completed':  html = viewCompleted(); break;
+        case 'issued':           html = viewIssued(); break;
+        case 'en_route_pickup':  html = viewEnRoutePickup(); break;
+        case 'loading':          html = viewLoading(); break;
+        case 'in_transit':       html = viewTransit(); break;
+        case 'at_dropoff':       html = viewDropoff(); break;
+        case 'completed':        html = viewCompleted(); break;
       }
       v.innerHTML = `<div class="animate-fade-in">${html}</div>`;
     }
@@ -889,7 +1081,7 @@
     }
 
     function etaCard(target) {
-      const targetTitle = CASE.dropoff.title;
+      const targetTitle = target === 'pickup' ? CASE.pickup.title : CASE.dropoff.title;
       const wazeBlock = state.wazeAttached
         ? `<div class="mt-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-3 flex items-center gap-3">
              ${wazePreviewURL
@@ -935,32 +1127,6 @@
         </div>`;
     }
 
-    // ---------- expected list (issued state — info-only, no plates) ----------
-    function expectedItemCard(item, idx) {
-      return `
-        <div class="rounded-2xl bg-white border border-slate-200 p-3 flex items-center gap-3">
-          <div class="w-8 h-8 rounded-full bg-slate-100 grid place-items-center text-xs font-bold text-slate-500 shrink-0">${idx + 1}</div>
-          <div class="flex-1 min-w-0">
-            <div class="font-semibold text-slate-900 truncate">${item.makeModel}</div>
-            <div class="text-xs text-slate-500">${item.color}</div>
-          </div>
-        </div>`;
-    }
-
-    function expectedList() {
-      const items = CASE.manifest.map(expectedItemCard).join('');
-      return `
-        <div class="space-y-3">
-          <div class="px-1">
-            <div class="font-semibold text-base">${t('expected.title')} (${CASE.manifest.length})</div>
-            <div class="text-xs text-slate-500">${t('expected.subtitle')}</div>
-          </div>
-          <div class="space-y-2">
-            ${items}
-          </div>
-        </div>`;
-    }
-
     // ---------- loaded list (loading / transit / dropoff / completed) ----------
     function loadedEntryCard(entry, opts) {
       const removable = opts && opts.removable;
@@ -988,7 +1154,7 @@
     }
 
     function loadedList(opts) {
-      const total = CASE.manifest.length;
+      const total = CASE.trailer.capacity;
       const loaded = loadedCount();
       const items = state.loaded.length === 0
         ? `<div class="rounded-2xl border-2 border-dashed border-slate-200 p-6 text-center">
@@ -1034,13 +1200,9 @@
           <!-- Pickup summary -->
           <div class="rounded-3xl bg-white border border-slate-200 shadow-card p-4">
             <div class="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-3">${t('issued.summary_title')}</div>
-            <div class="grid grid-cols-3 gap-3">
+            <div class="grid grid-cols-2 gap-3">
               <div>
-                <div class="text-2xl font-extrabold text-slate-900">${CASE.manifest.length}</div>
-                <div class="text-[11px] uppercase tracking-wider text-slate-500 font-semibold">${t('issued.stat_vehicles')}</div>
-              </div>
-              <div>
-                <div class="text-2xl font-extrabold text-slate-900">${CASE.manifest.length}<span class="text-sm font-bold text-slate-500">/${CASE.trailer.capacity}</span></div>
+                <div class="text-2xl font-extrabold text-slate-900">${CASE.trailer.capacity}<span class="text-sm font-bold text-slate-500"> max</span></div>
                 <div class="text-[11px] uppercase tracking-wider text-slate-500 font-semibold">${t('issued.stat_capacity')}</div>
               </div>
               <div>
@@ -1062,21 +1224,30 @@
           </div>
 
           ${locationCard('pickup')}
-          ${expectedList()}
           ${locationCard('dropoff')}
+        </div>`;
+    }
 
-          <div class="rounded-2xl bg-amber-50 border border-amber-200 p-4 flex gap-3">
-            <i data-lucide="info" class="w-5 h-5 text-amber-700 shrink-0 mt-0.5"></i>
-            <div class="text-sm text-amber-900">
-              <div class="font-semibold">${t('issued.reminder_title')}</div>
-              ${t('issued.reminder_body')}
-            </div>
+    function viewEnRoutePickup() {
+      return `
+        <div class="px-5 pt-5 pb-6 space-y-4">
+          ${mapPreview()}
+          ${etaCard('pickup')}
+          ${locationCard('pickup')}
+
+          <div class="grid grid-cols-2 gap-2">
+            <button onclick="openPresent()" class="h-12 rounded-2xl bg-slate-900 text-white font-semibold flex items-center justify-center gap-2">
+              <i data-lucide="id-card" class="w-4 h-4"></i> ${t('action.show_pass')}
+            </button>
+            <button onclick="openIssue()" class="h-12 rounded-2xl bg-white border border-slate-200 text-slate-700 font-semibold flex items-center justify-center gap-2">
+              <i data-lucide="alert-triangle" class="w-4 h-4"></i> ${t('action.report_issue')}
+            </button>
           </div>
         </div>`;
     }
 
     function viewLoading() {
-      const loaded = loadedCount(), total = CASE.manifest.length;
+      const loaded = loadedCount(), total = CASE.trailer.capacity;
 
       return `
         <div class="px-5 pt-5 pb-6 space-y-4">
@@ -1246,7 +1417,9 @@
           <div class="rounded-3xl bg-white border border-slate-200 shadow-card p-4">
             <div class="font-semibold mb-3">${t('complete.summary_title')}</div>
             <div class="space-y-2">
-              ${state.loaded.map(entry => `
+              ${state.loaded.map(entry => {
+                const photoCount = Object.values(entry.photos || {}).filter(Boolean).length;
+                return `
                 <div class="flex items-center gap-3 py-1.5">
                   <div class="w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 grid place-items-center"><i data-lucide="check" class="w-3.5 h-3.5"></i></div>
                   <div class="flex-1 min-w-0">
@@ -1254,10 +1427,10 @@
                     <div class="text-xs text-slate-500">${t('loaded.at')} ${fmtTime(entry.ts)}</div>
                   </div>
                   <div class="text-xs text-slate-500 inline-flex items-center gap-1">
-                    <i data-lucide="image" class="w-3.5 h-3.5"></i> 2
+                    <i data-lucide="image" class="w-3.5 h-3.5"></i> ${photoCount}
                   </div>
-                </div>
-              `).join('')}
+                </div>`;
+              }).join('')}
             </div>
           </div>
         </div>`;
@@ -1306,7 +1479,9 @@
 
       switch (state.step) {
         case 'issued':
-          return btn(t('action.start_run'), 'play', "setStep('loading')");
+          return btn(t('action.start_run'), 'play', "setStep('en_route_pickup')");
+        case 'en_route_pickup':
+          return btn(t('action.arrived_pickup'), 'map-pin-check', "setStep('loading')");
         case 'loading':
           return btn(t('action.depart_dropoff'), 'truck', "setStep('in_transit')", { disabled: loaded === 0 });
         case 'in_transit':
@@ -1326,8 +1501,13 @@
     // ===============================================================
     // LOAD VEHICLE FLOW
     // ===============================================================
+    const LOAD_ANGLES = ['front', 'rear', 'left', 'right'];
+
     function openLoadModal() {
-      pendingLoad = { plate: '', photos: { vehicle: false, plate: false } };
+      pendingLoad = {
+        plate: '',
+        photos: { front: false, rear: false, left: false, right: false },
+      };
       document.getElementById('loadPlateInput').value = '';
       document.getElementById('loadStatusBanner').innerHTML = '';
       document.getElementById('loadModal').classList.remove('hidden');
@@ -1342,39 +1522,47 @@
     }
 
     function renderLoadPhotoTiles() {
-      const tile = (kind) => {
-        const taken = pendingLoad && pendingLoad.photos[kind];
-        const label = t('load.photo_' + kind);
-        const icon  = kind === 'plate' ? 'scan-line' : 'car';
+      const tile = (angle) => {
+        const taken = pendingLoad && pendingLoad.photos[angle];
+        const label = t('load.angle.' + angle);
         if (taken) {
           return `
-            <div class="aspect-[4/3] rounded-2xl border border-emerald-200 bg-emerald-50 grid place-items-center relative overflow-hidden">
+            <div class="aspect-square rounded-2xl border border-emerald-200 bg-emerald-50 grid place-items-center relative overflow-hidden">
               <div class="absolute inset-0 bg-gradient-to-br from-slate-300 to-slate-500"></div>
               <div class="absolute inset-0 bg-black/20"></div>
               <div class="relative text-white flex flex-col items-center gap-1">
-                <div class="w-8 h-8 rounded-full bg-emerald-500 grid place-items-center">
-                  <i data-lucide="check" class="w-5 h-5"></i>
+                <div class="w-7 h-7 rounded-full bg-emerald-500 grid place-items-center">
+                  <i data-lucide="check" class="w-4 h-4"></i>
                 </div>
-                <div class="text-xs font-semibold">${label}</div>
+                <div class="text-[11px] font-semibold">${label}</div>
               </div>
             </div>`;
         }
         return `
-          <div class="aspect-[4/3] rounded-2xl border-2 border-dashed border-slate-300 photo-empty grid place-items-center hover:border-brand-500 hover:bg-brand-50 transition">
-            <div class="flex flex-col items-center gap-1.5 text-slate-500">
-              <i data-lucide="${icon}" class="w-6 h-6"></i>
-              <div class="text-xs font-semibold">${label}</div>
+          <div class="aspect-square rounded-2xl border-2 border-dashed border-slate-300 photo-empty grid place-items-center hover:border-brand-500 hover:bg-brand-50 transition">
+            <div class="flex flex-col items-center gap-1 text-slate-500">
+              <i data-lucide="camera" class="w-5 h-5"></i>
+              <div class="text-[11px] font-semibold">${label}</div>
             </div>
           </div>`;
       };
-      document.getElementById('loadPhotoVehicle').innerHTML = tile('vehicle');
-      document.getElementById('loadPhotoPlate').innerHTML   = tile('plate');
+      LOAD_ANGLES.forEach(angle => {
+        const el = document.getElementById('loadPhoto' + angle.charAt(0).toUpperCase() + angle.slice(1));
+        if (el) el.innerHTML = tile(angle);
+      });
+      // counter
+      const done = pendingLoad ? Object.values(pendingLoad.photos).filter(Boolean).length : 0;
+      const counter = document.getElementById('loadPhotosCounter');
+      if (counter) {
+        counter.textContent = done + '/' + LOAD_ANGLES.length;
+        counter.className = 'text-xs font-semibold ' + (done === LOAD_ANGLES.length ? 'text-emerald-600' : 'text-slate-500');
+      }
       lucide.createIcons();
     }
 
-    function openLoadPhoto(kind) {
-      pendingPhoto = { context: 'load', kind };
-      document.getElementById('photoModalAngle').textContent = t('load.photo_' + kind);
+    function openLoadPhoto(angle) {
+      pendingPhoto = { context: 'load', angle };
+      document.getElementById('photoModalAngle').textContent = t('load.angle.' + angle);
       document.getElementById('photoModal').classList.remove('hidden');
       lucide.createIcons();
     }
@@ -1390,10 +1578,10 @@
 
     function updateLoadSubmitState() {
       const btn = document.getElementById('loadSubmitBtn');
+      const allPhotos = pendingLoad && LOAD_ANGLES.every(a => pendingLoad.photos[a]);
       const ready = pendingLoad
         && pendingLoad.plate.trim().length >= 4
-        && pendingLoad.photos.vehicle
-        && pendingLoad.photos.plate;
+        && allPhotos;
       if (ready) {
         btn.disabled = false;
         btn.className = 'w-full h-14 rounded-2xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-base flex items-center justify-center gap-2 transition shadow-card';
@@ -1425,16 +1613,32 @@
         return;
       }
 
+      // Show plate-confirmation popup before actually loading the vehicle.
+      document.getElementById('confirmPlateDisplay').textContent = pendingLoad.plate.trim();
+      document.getElementById('confirmPlateModal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function cancelPlateConfirm() {
+      document.getElementById('confirmPlateModal').classList.add('hidden');
+      // Stay in the load modal so driver can edit the plate.
+      setTimeout(() => document.getElementById('loadPlateInput').focus(), 50);
+    }
+
+    function confirmPlateAndLoad() {
+      if (!pendingLoad) return;
       // Save the entry — admin will reconcile against the system manifest off-line.
+      const plate = pendingLoad.plate.trim();
       state.loaded.push({
         id: 'L' + Date.now(),
-        plate: pendingLoad.plate.trim(),
-        photos: { vehicle: true, plate: true },
+        plate,
+        photos: { ...pendingLoad.photos },
         ts: Date.now(),
       });
       saveState();
+      document.getElementById('confirmPlateModal').classList.add('hidden');
       closeLoadModal();
-      showLoadedToast(pendingLoad.plate.trim());
+      showLoadedToast(plate);
     }
 
     function showLoadedToast(plate) {
@@ -1472,7 +1676,7 @@
     function confirmPhoto() {
       if (!pendingPhoto) return;
       if (pendingPhoto.context === 'load') {
-        pendingLoad.photos[pendingPhoto.kind] = true;
+        pendingLoad.photos[pendingPhoto.angle] = true;
         closePhotoModal();
         renderLoadPhotoTiles();
         updateLoadSubmitState();
@@ -1531,9 +1735,6 @@
     // OVERLAYS
     // ===============================================================
     function openPresent() {
-      const total = CASE.manifest.length;
-      document.getElementById('presentRunCount').textContent =
-        loadedCount() + '/' + total + ' ' + t('present.vehicles');
       document.getElementById('presentOverlay').classList.remove('hidden');
       lucide.createIcons();
     }
